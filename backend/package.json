@@ -1,0 +1,25 @@
+{
+  "name": "promkin-backend",
+  "version": "1.0.0",
+  "description": "REST API Backend for PROM KIN Smart Meal Planner & Budget Management",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "promkin",
+    "meal-planner",
+    "rest-api",
+    "express",
+    "gemini-ai"
+  ],
+  "author": "Promkin Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

@@ -57,3 +57,7 @@ app.*.map.json
 # Firebase Credentials (keep secure per team member)
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+
+# Node.js backend
+node_modules/
+backend/.env

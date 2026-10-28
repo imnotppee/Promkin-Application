@@ -1,141 +1,158 @@
-# 🍱 PROMKIN (พร้อมกิน)
-> **แอปพลิเคชันวางแผนมื้ออาหาร และจัดการงบประมาณอย่างชาญฉลาด**
-> Smart Meal Planner & Budget Management Mobile Application
+# 🥬 PROM KIN (พร้อมกิน)
+> **แอปพลิเคชันวางแผนมื้ออาหาร และจัดการงบประมาณอย่างชาญฉลาด**  
+> Smart Meal Planner & Budget Management (Mobile Application & REST Backend)
 
-[![Promkin CI Workflow](https://github.com/imnotppee/Promkin-Application/actions/workflows/ci.yml/badge.svg)](https://github.com/imnotppee/Promkin-Application/actions/workflows/ci.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.5-blue.svg)](https://flutter.dev)
-[![Material Design 3](https://img.shields.io/badge/UI-Material%20Design%203-orange.svg)](https://m3.material.io)
-[![Test Coverage](https://img.shields.io/badge/Coverage-77.8%25-brightgreen.svg)]()
+[![Node.js Backend](https://img.shields.io/badge/Backend-Node.js%20%7C%20Express-green.svg)](https://nodejs.org)
+[![Material Design 3](https://img.shields.io/badge/UI-Material%20Design%203-416448.svg)](https://m3.material.io)
+[![Test Coverage](https://img.shields.io/badge/Coverage-73.66%25-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-21%2F21%20Passing-success.svg)]()
 
 ---
 
-## 👥 สมาชิกกลุ่มและผู้จัดทำ
-| ลำดับ | รหัสนักศึกษา | ชื่อ - นามสกุล | บทบาทในทีม |
-| :---: | :---: | :--- | :--- |
-| 1 | 67030002 | น.ส. กชณัช น้อยพันธ์ | สมาชิกและโปรไฟล์ (Auth / Profile / UI) |
-| 2 | 670300142 | นาย พัชรพล กลิ่นอ่อน | วางแผนมื้ออาหาร (Meal Planner / CRUD) |
-| 3 | 67030059 | น.ส. ชุธิพร เชาว์ชัย | AI แนะนำเมนู & โภชนาการ (AI Feature / Nutrition) |
-| 4 | 67030154 | นาย ปิยะวิทย์ พลศรี | งบประมาณ แจ้งเตือน & ฐานข้อมูล (Budget / SQLite / CI) |
+## 👥 สมาชิกกลุ่มและบทบาทหน้าที่ (MDSD Team)
+
+| ลำดับ | รหัสนักศึกษา | ชื่อ - นามสกุล | บทบาทในทีม | โฟลเดอร์ที่รับผิดชอบหลัก |
+| :---: | :---: | :--- | :--- | :--- |
+| 1 | 67030002 | น.ส. กชณัช น้อยพันธ์ | สมาชิกและโปรไฟล์ (Auth / UI / Settings) | `lib/features/auth/`<br>`lib/features/settings_budget/` |
+| 2 | 67030142 | นาย พัชรพล กลิ่นอ่อน | วางแผนมื้ออาหาร (Weekly Planner / CRUD) | `lib/features/meal_planner/`<br>`lib/features/home/` |
+| 3 | 67030059 | น.ส. ชุธิพร เชาว์ชัย | AI แนะนำเมนู & คลังสูตรอาหาร (Gemini / Recipe) | `lib/features/ai_recommendation/`<br>`lib/features/recipe_search/` |
+| 4 | 67030154 | นาย ปิยะวิทย์ พลศรี | Backend REST API, SQLite DB & CI Pipeline | `backend/`<br>`lib/core/network/`<br>`.github/workflows/` |
 
 ---
 
-## 🎯 ตารางเปรียบเทียบเกณฑ์การประเมินวิชา MDSD (20 คะแนนเต็ม)
+## 🎯 เกณฑ์การประเมินวิชา MDSD (20 คะแนนเต็ม)
 
-| ส่วนที่ | องค์ประกอบประเมิน | คะแนนเต็ม | สถานะในโค้ดปัจจุบัน | โฟลเดอร์ที่เกี่ยวข้อง |
+| ส่วนที่ | องค์ประกอบประเมิน | คะแนน | สถานะในโค้ดปัจจุบัน | โฟลเดอร์ที่เกี่ยวข้อง |
 | :---: | :--- | :---: | :---: | :--- |
-| **1** | **UI/UX ตาม Material Design 3 + Usability Testing** | 3 (15%) | ✅ สมบูรณ์ (Material 3 Theme, ColorScheme, Kanit Font) | `lib/core/theme/` |
-| **2** | **REST API / Firebase Backend ≥ 2 บริการ** | 3 (15%) | ✅ สมบูรณ์ (REST Client + Firebase Auth & Firestore Sync) | `lib/core/network/`<br>`lib/core/services/` |
-| **3** | **AI Feature (สอดคล้องกับแอปและครบ Flow)** | 3 (15%) | ✅ สมบูรณ์ (Google Gemini AI แนะนำเมนูตามงบและแคลอรี) | `lib/features/ai_recommendation/` |
-| **4** | **Local Database + Firestore** | 3 (15%) | ✅ สมบูรณ์ (SQLite ด้วย sqflite + SharedPreferences + Cloud Sync) | `lib/core/database/`<br>`lib/features/meal_planner/data/` |
-| **5** | **Testing ครบ 4 ประเภท + Code Coverage ≥ 70%** | 5 (25%) | ✅ สมบูรณ์ (Unit, Widget, Integration, Security) **Coverage: 77.8%** | `test/` |
-| **6** | **GitHub Actions CI (Build & Test อัตโนมัติ)** | 3 (15%) | ✅ สมบูรณ์ (CI Workflow: analyze + test + build) | `.github/workflows/ci.yml` |
+| **1** | **UI/UX ตาม Material Design 3 + Prototype** | 3 (15%) | ✅ สมบูรณ์ (ธีม PROM KIN Matcha Green `#416448` + ฟอนต์ Kanit ตรงตามแบบ `PROM-KIN.html`) | `lib/core/theme/`<br>`lib/core/constants/` |
+| **2** | **REST API / Firebase Backend ≥ 2 บริการ** | 3 (15%) | ✅ สมบูรณ์ (Express REST API ใน `backend/` + Firebase Auth & Firestore Client) | `backend/`<br>`lib/core/network/` |
+| **3** | **AI Feature (สอดคล้องกับแอปและครบ Flow)** | 3 (15%) | ✅ สมบูรณ์ (Google Gemini AI แนะนำเมนูตามงบ แคลอรี และวัตถุดิบที่แพ้ พร้อมกดเพิ่มลงแผนได้ทันที) | `lib/features/ai_recommendation/`<br>`backend/src/routes/ai.routes.js` |
+| **4** | **Local Database + Firestore Sync** | 3 (15%) | ✅ สมบูรณ์ (SQLite ด้วย `sqflite` + `SharedPreferences` + Firebase Service) | `lib/core/database/`<br>`lib/features/meal_planner/data/` |
+| **5** | **Testing ครบ 4 ประเภท + Coverage ≥ 70%** | 5 (25%) | ✅ สมบูรณ์ (Unit, Widget, Integration, Security) **21/21 ผ่านทั้งหมด Coverage 73.66%** | `test/` |
+| **6** | **GitHub Actions CI (Build & Test อัตโนมัติ)** | 3 (15%) | ✅ สมบูรณ์ (analyze + test coverage + build apk อัตโนมัติทุก push/pull_request) | `.github/workflows/ci.yml` |
 
 ---
 
-## 🏗️ โครงสร้างสถาปัตยกรรม (Architecture & Folder Structure)
+## 🏗️ โครงสร้างสถาปัตยกรรม (Project Structure)
 
-โปรเจกต์ใช้สถาปัตยกรรม **Feature-First Architecture** เพื่อให้สมาชิก 4 คนสามารถแยกกันพัฒนาฟีเจอร์ในโฟลเดอร์ของตนเองได้อย่างอิสระ ลดปัญหา Git Merge Conflict:
+โปรเจกต์แบ่งเป็น 2 ส่วนหลัก เพื่อให้เพื่อนร่วมทีมทำงานร่วมกันได้สะดวก ไม่เกิด Git Conflict:
 
 ```
-lib/
-├── core/                                # ส่วนกลางที่แชร์ร่วมกันในทีม
-│   ├── constants/                       # ค่าคงที่ สี และข้อความ
-│   │   ├── app_colors.dart              # ชุดสี Material 3 อาหาร สุขภาพ
-│   │   ├── app_constants.dart           # ค่าเริ่มต้น (งบ 300 บาท/วัน, 2000 kcal)
-│   │   └── app_strings.dart
-│   ├── database/                        # การจัดเก็บข้อมูลถาวร (เกณฑ์ข้อ 4)
-│   │   ├── database_helper.dart         # SQLite Local DB จัดการตาราง meals
-│   │   └── preferences_helper.dart      # SharedPreferences จัดการ Settings/Budget
-│   ├── network/                         # การเชื่อมต่อเครือข่าย REST API (เกณฑ์ข้อ 2)
-│   │   ├── api_client.dart              # REST Client (GET, POST, JSON parser)
-│   │   └── api_endpoints.dart
-│   ├── services/                        # บริการเสริมของแอป
-│   │   ├── ai_service.dart              # เชื่อมต่อ Google Gemini API (เกณฑ์ข้อ 3)
-│   │   ├── firebase_service.dart        # เชื่อมต่อ Firebase Backend (เกณฑ์ข้อ 2)
-│   │   └── notification_service.dart    # ระบบแจ้งเตือนเวลากินอาหาร (Meal Reminder)
-│   ├── theme/                           # ดีไซน์ Material 3 (เกณฑ์ข้อ 1)
-│   │   └── app_theme.dart               # Light/Dark Theme + Google Fonts Kanit
-│   └── utils/
-│       ├── currency_formatter.dart      # จัดการรูปแบบเงินบาท (฿)
-│       └── date_formatter.dart          # จัดการรูปแบบวันที่ภาษาไทย
+Promkin-Application/
+├── backend/                             # 🌐 ส่วน Backend REST API (Node.js + Express)
+│   ├── src/
+│   │   ├── routes/
+│   │   │   ├── meals.routes.js          # API จัดการมื้ออาหาร (GET, POST, PUT, DELETE)
+│   │   │   ├── recipes.routes.js        # API ค้นหาและกรองสูตรอาหาร
+│   │   │   ├── ai.routes.js             # API แนะนำเมนูอาหารด้วย Gemini AI / Smart Rules
+│   │   │   └── auth.routes.js           # API ระบบสมาชิก
+│   │   └── server.js                    # Express App Setup & Middlewares (PORT 5000)
+│   ├── .env.example                     # ไฟล์ตัวอย่าง Environment Variables
+│   ├── package.json                     # Dependencies: express, cors, dotenv
+│   └── README.md                        # เอกสารและวิธีทดสอบ Endpoints ฝั่ง Backend
 │
-├── features/                            # แบ่งตามฟีเจอร์หลัก (ให้เพื่อนแต่ละคนรับผิดชอบ)
-│   ├── auth/                            # โมดูลที่ 1: ระบบสมาชิก และข้อมูลผู้ใช้
-│   │   ├── data/user_model.dart
-│   │   └── presentation/                # AuthProvider, LoginScreen, ProfileScreen
+├── lib/                                 # 📱 ส่วน Mobile Application (Flutter Frontend)
+│   ├── core/                            # ส่วนกลางที่แชร์ร่วมกันในทีม
+│   │   ├── constants/                   # app_colors.dart, app_constants.dart, app_strings.dart
+│   │   ├── database/                    # database_helper.dart (SQLite), preferences_helper.dart
+│   │   ├── network/                     # api_client.dart, api_endpoints.dart
+│   │   ├── services/                    # ai_service.dart (Gemini), firebase_service.dart
+│   │   ├── theme/                       # app_theme.dart (Material Design 3 + Kanit)
+│   │   └── utils/                       # currency_formatter.dart, date_formatter.dart
 │   │
-│   ├── meal_planner/                    # โมดูลที่ 2: วางแผนมื้ออาหารประจำวัน (CRUD)
-│   │   ├── data/                        # MealModel, MealRepository
-│   │   └── presentation/                # MealProvider, MealCard, MealPlannerScreen, AddMealScreen
+│   ├── features/                        # แบ่งโมดูลแบบ Feature-First (เพื่อนรับผิดชอบคนละโมดูล)
+│   │   ├── home/                        # หน้าหลัก ภาพรวม (DashboardScreen) ตรงตามแบบ prototype
+│   │   │   └── presentation/screens/
+│   │   │       ├── dashboard_screen.dart        # การ์ดงบประมาณ, วัน 7 วัน, เมนูประจำวัน, สรุปโภชนาการ
+│   │   │       └── main_navigation_screen.dart  # เมนูนำทาง 5 แท็บ พร้อมปุ่ม ✦ AI เด่นตรงกลาง
+│   │   │
+│   │   ├── meal_planner/                # โมดูลที่ 2: วางแผนมื้ออาหารประจำสัปดาห์
+│   │   │   ├── data/                    # meal_model.dart, meal_repository.dart
+│   │   │   └── presentation/
+│   │   │       ├── screens/weekly_planner_screen.dart   # ปฏิทิน 7 วัน และ Day Detail
+│   │   │       ├── screens/add_meal_screen.dart         # ฟอร์มเพิ่มมื้ออาหาร
+│   │   │       └── widgets/add_to_plan_dialog.dart      # Dialog เลือกวัน/มื้อ/เวลา
+│   │   │
+│   │   ├── ai_recommendation/           # โมดูลที่ 3: ระบบ AI แนะนำเมนูอาหาร
+│   │   │   ├── data/ai_recommendation_model.dart
+│   │   │   └── presentation/screens/ai_recommendation_screen.dart
+│   │   │
+│   │   ├── recipe_search/               # โมดูลที่ 4: คลังสูตรอาหาร & การค้นหา
+│   │   │   ├── data/recipe_model.dart
+│   │   │   └── presentation/screens/recipe_search_screen.dart
+│   │   │
+│   │   ├── nutrition/                   # โมดูลที่ 5: ติดตามสารอาหาร (Macros)
+│   │   │   ├── data/nutrition_model.dart
+│   │   │   └── presentation/screens/nutrition_dashboard_screen.dart
+│   │   │
+│   │   ├── settings_budget/             # โมดูลที่ 6: ตั้งค่างบประมาณ อาหารที่แพ้ และโหมดมืด
+│   │   │   ├── data/budget_settings_model.dart
+│   │   │   └── presentation/screens/settings_screen.dart
+│   │   │
+│   │   └── auth/                        # โมดูลที่ 7: ระบบล็อกอินและโปรไฟล์ผู้ใช้
+│   │       ├── data/user_model.dart
+│   │       └── presentation/screens/login_screen.dart, profile_screen.dart
 │   │
-│   ├── ai_recommendation/               # โมดูลที่ 3: ระบบ AI แนะนำเมนูอาหารตามงบ
-│   │   ├── data/ai_recommendation_model.dart
-│   │   └── presentation/                # AiProvider, RecommendedMenuCard, AiRecommendationScreen
-│   │
-│   ├── nutrition/                       # โมดูลที่ 4: ข้อมูลโภชนาการ (Calories/Macros)
-│   │   ├── data/nutrition_model.dart
-│   │   └── presentation/                # NutritionProvider, MacroProgressBar, NutritionDashboardScreen
-│   │
-│   ├── settings_budget/                 # โมดูลที่ 5: ตั้งค่างบประมาณ และอาหารที่แพ้
-│   │   ├── data/budget_settings_model.dart
-│   │   └── presentation/                # SettingsProvider, SettingsScreen
-│   │
-│   └── home/                            # หน้าหลัก NavigationBar รวม 4 แท็บ
-│       └── presentation/screens/main_navigation_screen.dart
+│   └── main.dart                        # Initializer (Thai Locale, Desktop SQLite, Providers)
 │
-└── main.dart                            # Entry Point และการลงทะเบียน Provider
+├── test/                                # 🧪 Automated Tests ครบ 4 ประเภท (Coverage: 73.66%)
+│   ├── unit/                            # ทดสอบ Model, Formatter, Nutrition, Settings
+│   ├── widget/                          # ทดสอบ MealCard, ProgressBar, Dashboard, Planner, Search
+│   ├── integration/                     # ทดสอบ E2E Flow เพิ่มอาหาร -> ตัดงบ -> โภชนาการเปลี่ยน
+│   └── security/                        # ทดสอบ XSS sanitization, SQL Injection prevention, Negative inputs
+│
+└── .github/workflows/ci.yml             # 🤖 GitHub Actions CI Workflow
 ```
 
 ---
 
-## 🧪 การทดสอบระบบ (Testing Suite ครบ 4 ประเภท)
+## 🚀 วิธีการรันโปรเจกต์ (สำหรับเพื่อนร่วมทีม)
 
-ชุดทดสอบถูกจัดโครงสร้างในโฟลเดอร์ `test/` แยกตามประเภทอย่างชัดเจน:
-1. **Unit Tests** (`test/unit/`):
-   - `meal_model_test.dart`: ทดสอบการแปลงข้อมูล Model, Map, CopyWith
-   - `currency_formatter_test.dart`: ทดสอบการจัดรูปแบบค่าเงินบาท
-   - `nutrition_calculation_test.dart`: ทดสอบการคำนวณสัดส่วนสารอาหาร
-2. **Widget Tests** (`test/widget/`):
-   - `meal_card_widget_test.dart`: ทดสอบการเรนเดอร์การ์ดอาหารและปุ่มกด Check
-   - `macro_progress_bar_test.dart`: ทดสอบแถบแสดงสถานะโภชนาการ
-3. **Integration Tests** (`test/integration/`):
-   - `meal_planner_flow_test.dart`: ทดสอบ Flow แบบครบวงจร (เพิ่มอาหาร -> ตัดงบประมาณ -> คำนวณโภชนาการใหม่ -> ติ๊กเสร็จสิ้น -> ลบรายการ)
-4. **Security Tests** (`test/security/`):
-   - `input_validation_test.dart`: ทดสอบการป้องกัน Script Injection ในช่อง Note, ทดสอบความปลอดภัยของ Data Model ต่อค่าผิดปกติ, และการป้องกัน SQL Injection
-
-### คำสั่งรันการทดสอบและคำนวณ Coverage:
+### 1. วิธีรัน Mobile Application (Frontend)
 ```bash
-flutter test --coverage
-```
-
----
-
-## 🚀 วิธีการติดตั้งและรันโปรเจกต์ (Getting Started)
-
-### 1. คัดลอกโปรเจกต์ (Clone)
-```bash
-git clone https://github.com/imnotppee/Promkin-Application.git
-cd Promkin-Application
-```
-
-### 2. ติดตั้ง Dependencies
-```bash
+# ติดตั้ง Flutter Dependencies
 flutter pub get
-```
 
-### 3. ตั้งค่าตัวแปรสภาพแวดล้อม (Optional สำหรับ AI Key)
-คัดลอกไฟล์ `.env.example` ไปเป็น `.env`:
-```bash
-cp .env.example .env
-```
-*(หากยังไม่มี API Key ระบบจะมี Smart Fallback Engine คอยแนะนำเมนูให้ทันทีโดยไม่พัง)*
+# ตรวจสอบโค้ดว่าไม่มี Error/Warning
+flutter analyze
 
-### 4. รันแอปพลิเคชัน
-```bash
+# รัน Automated Tests ทั้งหมด พร้อมวัด Code Coverage
+flutter test --coverage
+
+# รันแอปพลิเคชัน (บน Android Emulator, Chrome หรือเครื่องจริง)
 flutter run
 ```
 
+### 2. วิธีรัน REST API Server (Backend)
+```bash
+# เข้าโฟลเดอร์ backend
+cd backend
+
+# ติดตั้ง Dependencies
+npm install
+
+# รัน Server ในโหมด Auto-reload
+npm run dev
+```
+> **หมายเหตุการเชื่อมต่อ**:  
+> ฝั่ง Android Emulator จะเชื่อมต่อ Backend ที่เครื่องคอมพิวเตอร์ผ่าน URL `http://10.0.2.2:5000/api` โดยอัตโนมัติ
+
 ---
 
-## 📖 คู่มือการทำงานร่วมกันในทีม
-โปรดอ่านรายละเอียดเพิ่มเติมเกี่ยวกับการตั้งชื่อ Branch และการเปิด Pull Request ได้ใน [CONTRIBUTING.md](CONTRIBUTING.md)
+## 🌿 กฎการทำงานร่วมกันในทีม (Git Collaboration)
+
+1. **อย่า Commit ทับลงบน `main` โดยตรง**:
+   ให้แตก Branch ตามฟีเจอร์ของตนเองเสมอ เช่น:
+   - `feature/meal-planner`
+   - `feature/ai-recommendation`
+   - `feature/recipe-catalog`
+   - `feature/backend-api`
+2. **ก่อน Push โค้ดขึ้น GitHub**:
+   รันคำสั่งตรวจสอบเสมอ:
+   ```bash
+   flutter analyze   # ต้องไม่มี Error
+   flutter test      # ต้องผ่าน 100%
+   ```
+3. **เปิด Pull Request (PR)**:
+   GitHub Actions CI จะทำการตรวจสอบ Build & Test อัตโนมัติให้ก่อนรวมโค้ดเข้าสู่ `main`

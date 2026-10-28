@@ -8,6 +8,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.paper,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
@@ -18,31 +19,40 @@ class AppTheme {
         onSecondary: AppColors.onSecondary,
         secondaryContainer: AppColors.secondaryContainer,
         onSecondaryContainer: AppColors.onSecondaryContainer,
-        brightness: Brightness.light,
         surface: AppColors.surfaceLight,
+        brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: AppColors.backgroundLight,
       textTheme: baseTextTheme.copyWith(
         titleLarge: baseTextTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.bold,
+          color: AppColors.ink,
         ),
         titleMedium: baseTextTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w600,
+          color: AppColors.ink,
+        ),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+          color: AppColors.ink,
         ),
       ),
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         titleTextStyle: GoogleFonts.kanit(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: AppColors.ink,
         ),
+        iconTheme: const IconThemeData(color: AppColors.ink),
       ),
       cardTheme: CardThemeData(
-        elevation: 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: AppColors.line),
+        ),
         color: AppColors.surfaceLight,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -50,30 +60,30 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           textStyle: GoogleFonts.kanit(
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderSide: const BorderSide(color: AppColors.line),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: const BorderSide(color: AppColors.line),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -81,17 +91,21 @@ class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        elevation: 2,
+        elevation: 3,
+        backgroundColor: Colors.white,
         indicatorColor: AppColors.primaryContainer,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return GoogleFonts.kanit(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.bold,
               color: AppColors.primary,
             );
           }
-          return GoogleFonts.kanit(fontSize: 12, color: Colors.grey.shade600);
+          return GoogleFonts.kanit(
+            fontSize: 11,
+            color: AppColors.muted,
+          );
         }),
       ),
     );
@@ -104,17 +118,20 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      scaffoldBackgroundColor: AppColors.backgroundDark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         brightness: Brightness.dark,
         primary: AppColors.primary,
         surface: AppColors.surfaceDark,
       ),
-      scaffoldBackgroundColor: AppColors.backgroundDark,
       textTheme: baseTextTheme,
       cardTheme: CardThemeData(
-        elevation: 1,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: Colors.white.withAlpha(20)),
+        ),
         color: AppColors.surfaceDark,
       ),
     );

@@ -10,6 +10,9 @@ class MealModel {
   final String date; // 'YYYY-MM-DD'
   final bool isCompleted;
   final String? notes;
+  final String emoji;
+  final String time;
+  final List<String> tags;
 
   MealModel({
     required this.id,
@@ -23,6 +26,9 @@ class MealModel {
     required this.date,
     this.isCompleted = false,
     this.notes,
+    this.emoji = '🍛',
+    this.time = '12:00',
+    this.tags = const [],
   });
 
   MealModel copyWith({
@@ -37,6 +43,9 @@ class MealModel {
     String? date,
     bool? isCompleted,
     String? notes,
+    String? emoji,
+    String? time,
+    List<String>? tags,
   }) {
     return MealModel(
       id: id ?? this.id,
@@ -50,6 +59,9 @@ class MealModel {
       date: date ?? this.date,
       isCompleted: isCompleted ?? this.isCompleted,
       notes: notes ?? this.notes,
+      emoji: emoji ?? this.emoji,
+      time: time ?? this.time,
+      tags: tags ?? this.tags,
     );
   }
 
@@ -66,6 +78,9 @@ class MealModel {
       'date': date,
       'isCompleted': isCompleted ? 1 : 0,
       'notes': notes,
+      'emoji': emoji,
+      'time': time,
+      'tags': tags.join(','),
     };
   }
 
@@ -82,6 +97,11 @@ class MealModel {
   }
 
   factory MealModel.fromMap(Map<String, dynamic> map) {
+    List<String> parsedTags = [];
+    if (map['tags'] != null && map['tags'].toString().isNotEmpty) {
+      parsedTags = map['tags'].toString().split(',');
+    }
+
     return MealModel(
       id: map['id']?.toString() ?? '',
       name: map['name'] ?? '',
@@ -94,6 +114,9 @@ class MealModel {
       date: map['date'] ?? '',
       isCompleted: (map['isCompleted'] == 1 || map['isCompleted'] == true),
       notes: map['notes'],
+      emoji: map['emoji'] ?? '🍛',
+      time: map['time'] ?? '12:00',
+      tags: parsedTags,
     );
   }
 }

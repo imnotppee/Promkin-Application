@@ -1,11 +1,31 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
+
+/// Centralized API Endpoints for REST API and AI Services
 class ApiEndpoints {
-  // Base URLs
+  // Local Express Backend server
+  // On Android Emulator, localhost is reached via 10.0.2.2
+  // On iOS Simulator or Web/Desktop, localhost is 127.0.0.1 / localhost
+  static String get localBackendBase {
+    if (kIsWeb) return 'http://localhost:5000/api';
+    if (Platform.isAndroid) return 'http://10.0.2.2:5000/api';
+    return 'http://localhost:5000/api';
+  }
+
+  // REST API Routes (Node.js / Express backend)
+  static String get meals => '$localBackendBase/meals';
+  static String get recipes => '$localBackendBase/recipes';
+  static String get aiRecommend => '$localBackendBase/ai/recommend';
+  static String get authLogin => '$localBackendBase/auth/login';
+  static String get authRegister => '$localBackendBase/auth/register';
+
+  // Gemini AI Base URL
   static const String geminiApiBase =
       'https://generativelanguage.googleapis.com/v1beta';
 
-  // Example REST Backend (Food / Nutrition API e.g. Spoonacular, Edamam, or Custom Backend)
+  // Third-party nutrition / recipe database
   static const String foodApiBase = 'https://api.spoonacular.com/recipes';
 
-  // Local or Mock Backend for testing
+  // Internal Mock base
   static const String mockApiBase = 'https://promkin-api.mock.internal';
 }
