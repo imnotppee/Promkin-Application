@@ -19,6 +19,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedDayIndex = 1; // Default to Tuesday as in prototype
+  int _weekOffset = 0;
 
   final List<String> _dayNames = const [
     'จ.',
@@ -33,7 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DateTime _getDateForDayIndex(int index) {
     final now = DateTime.now();
     final monday = now.subtract(Duration(days: now.weekday - 1));
-    return monday.add(Duration(days: index));
+    return monday.add(Duration(days: _weekOffset * 7 + index));
   }
 
   @override
@@ -143,31 +144,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ],
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.line),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.calendar_today,
-                    size: 13,
-                    color: AppColors.muted,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    DateFormat('d MMM yyyy', 'th_TH').format(selectedDate),
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+            Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    if (widget.onNavigateToTab != null) {
+                      widget.onNavigateToTab!(4); // Switch to Settings tab
+                    }
+                  },
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.line),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.settings_outlined,
+                      size: 18,
                       color: AppColors.ink,
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.line),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 13,
+                        color: AppColors.muted,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        DateFormat('d MMM yyyy', 'th_TH').format(selectedDate),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -392,38 +421,129 @@ class _DashboardScreenState extends State<DashboardScreen> {
     MealProvider mealProv,
     List<MealModel> dayMeals,
   ) {
+    final startOfWeek = _getDateForDayIndex(0);
+    final endOfWeek = _getDateForDayIndex(6);
+    final weekRangeStr =
+        '${startOfWeek.day} ${DateFormat('MMM', 'th_TH').format(startOfWeek)} – ${endOfWeek.day} ${DateFormat('MMM', 'th_TH').format(endOfWeek)}';
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Toolbar
+            // Toolbar with Date range & Prev/Next arrows
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'แผนมื้ออาหาร',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.ink,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (widget.onNavigateToTab != null) {
-                      widget.onNavigateToTab!(1); // Switch to Planner tab
-                    }
-                  },
-                  child: const Text(
-                    'ดูทั้งหมด ›',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    const Text(
+                      'แผนมื้ออาหาร',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.ink,
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Text(
+                      weekRangeStr,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        setState(() {
+                          _weekOffset--;
+                        });
+                        mealProv.setSelectedDate(
+                          _getDateForDayIndex(_selectedDayIndex),
+                        );
+                      },
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: AppColors.line),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          '‹',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.ink,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        setState(() {
+                          _weekOffset++;
+                        });
+                        mealProv.setSelectedDate(
+                          _getDateForDayIndex(_selectedDayIndex),
+                        );
+                      },
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: AppColors.line),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          '›',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.ink,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: () {
+                        if (widget.onNavigateToTab != null) {
+                          widget.onNavigateToTab!(1); // Switch to Planner tab
+                        }
+                      },
+                      child: const Text(
+                        'ดูทั้งหมด ›',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -608,24 +728,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: AppColors.ink,
                   ),
                 ),
-                const SizedBox(height: 2),
+                if (meal.notes != null && meal.notes!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    meal.notes!,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.muted,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,
                   children: meal.tags.map((t) {
+                    final isOrange = t.contains('แนะนำ') || t.contains('มังสวิรัติ');
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
-                        vertical: 1,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0F2E9),
+                        color: isOrange
+                            ? const Color(0xFFFFF0E6)
+                            : const Color(0xFFF0F2E9),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         t,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 9,
-                          color: Color(0xFF68745E),
+                          color: isOrange
+                              ? const Color(0xFFB5774D)
+                              : const Color(0xFF68745E),
                         ),
                       ),
                     );
@@ -646,7 +783,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               Text(
-                '฿${meal.price.toStringAsFixed(0)}',
+                'kcal · ฿${meal.price.toStringAsFixed(0)}',
                 style: const TextStyle(
                   fontSize: 10,
                   color: AppColors.muted,

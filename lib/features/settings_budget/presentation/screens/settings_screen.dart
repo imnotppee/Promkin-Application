@@ -30,11 +30,70 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // Section 0: User Profile (matching prototype)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFDE0C9),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text('🙂', style: TextStyle(fontSize: 22)),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'คุณพิมพ์ชนก',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'แพ็กเกจฟรี · นักศึกษา · โปรไฟล์ PROM KIN',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Section 1: Budget Settings
           _buildSectionHeader('การจัดการงบประมาณและมื้ออาหาร'),
           Card(
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: AppColors.primary,
+                  ),
+                  title: const Text('งบประมาณต่อเดือน'),
+                  subtitle: Text(
+                    CurrencyFormatter.format(settings.monthlyBudget),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showMonthlyBudgetDialog(context, settings),
+                ),
+                const Divider(height: 1),
                 ListTile(
                   leading: const Icon(
                     Icons.attach_money,
@@ -158,6 +217,42 @@ class SettingsScreen extends StatelessWidget {
           fontSize: 14,
           color: Colors.black54,
         ),
+      ),
+    );
+  }
+
+  void _showMonthlyBudgetDialog(
+    BuildContext context,
+    SettingsProvider settings,
+  ) {
+    final controller = TextEditingController(
+      text: settings.monthlyBudget.toStringAsFixed(0),
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('กำหนดงบประมาณต่อเดือน (บาท)'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'งบประมาณรายเดือน (บาท)'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('ยกเลิก'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text);
+              if (val != null && val > 0) {
+                settings.updateMonthlyBudget(val);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('บันทึก'),
+          ),
+        ],
       ),
     );
   }

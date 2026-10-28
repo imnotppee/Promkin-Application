@@ -6,6 +6,7 @@ import 'package:promkin_app/core/utils/currency_formatter.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
 import 'package:promkin_app/features/meal_planner/presentation/screens/add_meal_screen.dart';
+import 'package:promkin_app/features/settings_budget/presentation/screens/settings_screen.dart';
 
 class WeeklyPlannerScreen extends StatefulWidget {
   const WeeklyPlannerScreen({super.key});
@@ -47,6 +48,18 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
       appBar: AppBar(
         title: const Text('วางแผนมื้ออาหาร'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'ตั้งค่าอาหารและงบประมาณ',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: () {
