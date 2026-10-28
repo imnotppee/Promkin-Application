@@ -105,3 +105,4 @@ Server จะเริ่มทำงานที่:
 - `lib/core/network/api_endpoints.dart`
 
 โดยฝั่ง Android Emulator จะเข้าถึง Backend ได้ผ่าน `http://10.0.2.2:5000/api` โดยอัตโนมัติ
+

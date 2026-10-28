@@ -376,3 +376,4 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     );
   }
 }
+

@@ -332,3 +332,4 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
     );
   }
 }
+
