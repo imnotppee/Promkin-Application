@@ -41,6 +41,7 @@ dependencies:
   google_fonts: ^8.2.1
   sqflite: ^2.4.5
   path: ^1.9.1
+  sqflite_common_ffi: ^2.4.5
 
 dev_dependencies:
   flutter_test:
@@ -94,3 +95,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+dependency_overrides:
+  shared_preferences_android: 2.3.3
+  path_provider_android: 2.2.10

@@ -67,3 +67,4 @@ flutter test --coverage
 
 > [!NOTE]
 > ทางทีมได้ตั้งค่า **GitHub Actions CI** ไว้แล้ว เมื่อเปิด Pull Request ระบบจะรัน Analyze และ Test อัตโนมัติ หากมีข้อผิดพลาดระบบจะขึ้นแจ้งเตือนทันที
+

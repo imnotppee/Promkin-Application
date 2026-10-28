@@ -87,18 +87,18 @@ class MealCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
                     children: [
                       _buildMacroBadge(
                         '${meal.calories} kcal',
                         AppColors.calories,
                       ),
-                      const SizedBox(width: 8),
                       _buildMacroBadge(
                         'P: ${meal.protein}g',
                         AppColors.protein,
                       ),
-                      const SizedBox(width: 8),
                       _buildMacroBadge('C: ${meal.carbs}g', AppColors.carbs),
                     ],
                   ),

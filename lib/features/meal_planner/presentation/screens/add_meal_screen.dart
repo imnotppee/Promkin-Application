@@ -115,9 +115,12 @@ class _AddMealScreenState extends State<AddMealScreen> {
                         prefixIcon: Icon(Icons.attach_money),
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty) return 'กรุณาระบุราคา';
-                        if (double.tryParse(val) == null)
+                        if (val == null || val.isEmpty) {
+                          return 'กรุณาระบุราคา';
+                        }
+                        if (double.tryParse(val) == null) {
                           return 'ตัวเลขไม่ถูกต้อง';
+                        }
                         return null;
                       },
                     ),
@@ -132,10 +135,12 @@ class _AddMealScreenState extends State<AddMealScreen> {
                         prefixIcon: Icon(Icons.local_fire_department),
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty)
+                        if (val == null || val.isEmpty) {
                           return 'กรุณาระบุแคลอรี';
-                        if (int.tryParse(val) == null)
+                        }
+                        if (int.tryParse(val) == null) {
                           return 'ตัวเลขไม่ถูกต้อง';
+                        }
                         return null;
                       },
                     ),
