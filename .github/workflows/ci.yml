@@ -1,0 +1,62 @@
+name: Promkin CI Workflow
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    name: Flutter Analyze, Test & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java (Temurin 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Check Code Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Project Source
+        run: flutter analyze
+
+      - name: Run Test Suite with Code Coverage
+        run: flutter test --coverage
+
+      - name: Verify Code Coverage >= 70%
+        run: |
+          python3 -c "
+          lines_hit = 0
+          lines_found = 0
+          with open('coverage/lcov.info', 'r') as f:
+              for line in f:
+                  if line.startswith('LH:'):
+                      lines_hit += int(line.strip().split(':')[1])
+                  elif line.startswith('LF:'):
+                      lines_found += int(line.strip().split(':')[1])
+          coverage = (lines_hit / lines_found) * 100 if lines_found > 0 else 0
+          print(f'Code Coverage: {coverage:.2f}%')
+          if coverage < 70.0:
+              print('Error: Coverage below 70% threshold!')
+              exit(1)
+          print('Code Coverage Requirement (>=70%) PASSED!')
+          "
+
+      - name: Build Android APK (Debug / CI Verification)
+        run: flutter build apk --debug
