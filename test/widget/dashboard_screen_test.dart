@@ -26,9 +26,7 @@ void main() {
             ChangeNotifierProvider.value(value: mealProv),
             ChangeNotifierProvider.value(value: settingsProv),
           ],
-          child: const MaterialApp(
-            home: DashboardScreen(),
-          ),
+          child: const MaterialApp(home: DashboardScreen()),
         ),
       );
 

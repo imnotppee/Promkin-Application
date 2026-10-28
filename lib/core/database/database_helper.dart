@@ -51,10 +51,14 @@ class DatabaseHelper {
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       try {
-        await db.execute("ALTER TABLE meals ADD COLUMN emoji TEXT DEFAULT '🍛'");
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN emoji TEXT DEFAULT '🍛'",
+        );
       } catch (_) {}
       try {
-        await db.execute("ALTER TABLE meals ADD COLUMN time TEXT DEFAULT '12:00'");
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN time TEXT DEFAULT '12:00'",
+        );
       } catch (_) {}
       try {
         await db.execute("ALTER TABLE meals ADD COLUMN tags TEXT DEFAULT ''");

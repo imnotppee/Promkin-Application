@@ -88,11 +88,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 20),
 
                 // AI Highlight Banner Card
-                _buildAiRecommendationBanner(context, mealProv, selectedDateStr),
+                _buildAiRecommendationBanner(
+                  context,
+                  mealProv,
+                  selectedDateStr,
+                ),
                 const SizedBox(height: 18),
 
                 // Today's Nutrition Summary Card
-                _buildNutritionSummaryCard(context, mealsForSelectedDay, settingsProv),
+                _buildNutritionSummaryCard(
+                  context,
+                  mealsForSelectedDay,
+                  settingsProv,
+                ),
                 const SizedBox(height: 24),
               ],
             ),
@@ -171,7 +179,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
@@ -218,10 +229,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 4),
         const Text(
           'วันนี้กินอะไรดี? วางแผนมื้ออร่อยและสบายกระเป๋ากัน',
-          style: TextStyle(
-            fontSize: 12,
-            color: AppColors.muted,
-          ),
+          style: TextStyle(fontSize: 12, color: AppColors.muted),
         ),
       ],
     );
@@ -250,10 +258,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     const Text(
                       'งบอาหารเดือนนี้',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.muted,
-                      ),
+                      style: TextStyle(fontSize: 12, color: AppColors.muted),
                     ),
                     Container(
                       width: 28,
@@ -305,10 +310,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 6),
                 Text(
                   'เหลือ ${CurrencyFormatter.formatCompact(remaining)}',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: AppColors.muted,
-                  ),
+                  style: const TextStyle(fontSize: 10, color: AppColors.muted),
                 ),
               ],
             ),
@@ -560,7 +562,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: List.generate(7, (i) {
                 final isSelected = _selectedDayIndex == i;
                 final dayDate = _getDateForDayIndex(i);
-                final isToday = DateTime.now().day == dayDate.day &&
+                final isToday =
+                    DateTime.now().day == dayDate.day &&
                     DateTime.now().month == dayDate.month;
 
                 return Expanded(
@@ -750,7 +753,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Wrap(
                   spacing: 4,
                   children: meal.tags.map((t) {
-                    final isOrange = t.contains('แนะนำ') || t.contains('มังสวิรัติ');
+                    final isOrange =
+                        t.contains('แนะนำ') || t.contains('มังสวิรัติ');
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
@@ -790,10 +794,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               Text(
                 'kcal · ฿${meal.price.toStringAsFixed(0)}',
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: AppColors.muted,
-                ),
+                style: const TextStyle(fontSize: 10, color: AppColors.muted),
               ),
             ],
           ),
@@ -826,7 +827,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,
-                child: const Text('✦', style: TextStyle(color: AppColors.primary)),
+                child: const Text(
+                  '✦',
+                  style: TextStyle(color: AppColors.primary),
+                ),
               ),
               const SizedBox(width: 8),
               const Text(
@@ -851,10 +855,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 4),
           const Text(
             'เลือกเมนูที่เหมาะกับงบและสไตล์การกินของคุณในวันนี้',
-            style: TextStyle(
-              fontSize: 11,
-              color: Color(0xFF778171),
-            ),
+            style: TextStyle(fontSize: 11, color: Color(0xFF778171)),
           ),
           const SizedBox(height: 12),
           Row(
@@ -901,10 +902,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       Text(
                         'ทำง่าย · 20 นาที · 380 kcal',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.muted,
-                        ),
+                        style: TextStyle(fontSize: 10, color: AppColors.muted),
                       ),
                     ],
                   ),
@@ -948,7 +946,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         mealProv.addMeal(newMeal);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('เพิ่มข้าวกะเพราเต้าหู้ไข่ในแผนแล้ว!'),
+                            content: Text(
+                              'เพิ่มข้าวกะเพราเต้าหู้ไข่ในแผนแล้ว!',
+                            ),
                             backgroundColor: AppColors.primary,
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -979,10 +979,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 10,
-          color: Color(0xFF61745A),
-        ),
+        style: const TextStyle(fontSize: 10, color: Color(0xFF61745A)),
       ),
     );
   }
@@ -1027,10 +1024,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                   child: const Text(
                     'เป้าหมายรายวัน ⌄',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppColors.muted,
-                    ),
+                    style: TextStyle(fontSize: 10, color: AppColors.muted),
                   ),
                 ),
               ],
@@ -1080,9 +1074,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                _buildMacroCol('โปรตีน', '${totalProtein.toInt()} / 90 ก.', const Color(0xFF9BB184)),
-                _buildMacroCol('คาร์บ', '${totalCarbs.toInt()} / 250 ก.', const Color(0xFFE6AD7D)),
-                _buildMacroCol('ไขมัน', '${totalFat.toInt()} / 65 ก.', const Color(0xFFD7C16F)),
+                _buildMacroCol(
+                  'โปรตีน',
+                  '${totalProtein.toInt()} / 90 ก.',
+                  const Color(0xFF9BB184),
+                ),
+                _buildMacroCol(
+                  'คาร์บ',
+                  '${totalCarbs.toInt()} / 250 ก.',
+                  const Color(0xFFE6AD7D),
+                ),
+                _buildMacroCol(
+                  'ไขมัน',
+                  '${totalFat.toInt()} / 65 ก.',
+                  const Color(0xFFD7C16F),
+                ),
               ],
             ),
           ],

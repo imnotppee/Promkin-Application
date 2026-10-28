@@ -1,7 +1,6 @@
 class AppStrings {
   static const String appName = 'PROM KIN';
-  static const String appTagline =
-      'วางแผนมื้ออาหารอย่างสบายใจ อร่อยครบ จบในงบ';
+  static const String appTagline = 'วางแผนมื้ออาหารอย่างสบายใจ อร่อยครบ จบในงบ';
 
   // Navigation (5 destinations matching PROM-KIN prototype)
   static const String navHome = 'ภาพรวม';

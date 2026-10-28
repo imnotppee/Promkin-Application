@@ -235,7 +235,9 @@ class SettingsScreen extends StatelessWidget {
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'งบประมาณรายเดือน (บาท)'),
+          decoration: const InputDecoration(
+            labelText: 'งบประมาณรายเดือน (บาท)',
+          ),
         ),
         actions: [
           TextButton(

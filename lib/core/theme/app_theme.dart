@@ -31,9 +31,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.ink,
         ),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(
-          color: AppColors.ink,
-        ),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: AppColors.ink),
       ),
       appBarTheme: AppBarTheme(
         centerTitle: true,
@@ -102,10 +100,7 @@ class AppTheme {
               color: AppColors.primary,
             );
           }
-          return GoogleFonts.kanit(
-            fontSize: 11,
-            color: AppColors.muted,
-          );
+          return GoogleFonts.kanit(fontSize: 11, color: AppColors.muted);
         }),
       ),
     );
