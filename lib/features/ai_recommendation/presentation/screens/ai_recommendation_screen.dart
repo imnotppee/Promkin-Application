@@ -96,7 +96,10 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('งบอาหารต่อวัน', style: TextStyle(fontSize: 13)),
+                        const Text(
+                          'งบอาหารต่อวัน',
+                          style: TextStyle(fontSize: 13),
+                        ),
                         SizedBox(
                           width: 110,
                           child: TextField(
@@ -105,7 +108,9 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                             textAlign: TextAlign.end,
                             decoration: InputDecoration(
                               prefixText: '฿ ',
-                              prefixStyle: const TextStyle(fontWeight: FontWeight.bold),
+                              prefixStyle: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 10,
                                 vertical: 8,
@@ -145,7 +150,10 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                     // Cuisine Types
                     const Text(
                       'ประเภทอาหารที่ต้องการ',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -159,7 +167,9 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                           labelStyle: TextStyle(
                             fontSize: 12,
                             color: isSel ? AppColors.primary : AppColors.ink,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSel
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                           onSelected: (selected) {
                             setState(() {
@@ -180,7 +190,10 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                     // Nutrition Goal
                     const Text(
                       'เป้าหมายโภชนาการ',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -194,7 +207,9 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                           labelStyle: TextStyle(
                             fontSize: 12,
                             color: isSel ? AppColors.primary : AppColors.ink,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSel
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                           onSelected: (val) {
                             if (val) setState(() => _selectedGoal = g);
@@ -239,7 +254,11 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Column(
                     children: [
-                      const Icon(Icons.error_outline, size: 40, color: Colors.red),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 40,
+                        color: Colors.red,
+                      ),
                       const SizedBox(height: 8),
                       Text(ai.errorMessage!),
                       const SizedBox(height: 8),
@@ -257,10 +276,7 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
                 children: [
                   const Text(
                     'เมนูแนะนำสำหรับคุณ',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '${ai.recommendations.length} รายการ',
