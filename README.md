@@ -10,30 +10,6 @@
 
 ---
 
-## 👥 สมาชิกกลุ่มและบทบาทหน้าที่ (MDSD Team)
-
-| ลำดับ | รหัสนักศึกษา | ชื่อ - นามสกุล | บทบาทในทีม | โฟลเดอร์ที่รับผิดชอบหลัก |
-| :---: | :---: | :--- | :--- | :--- |
-| 1 | 67030002 | น.ส. กชณัช น้อยพันธ์ | สมาชิกและโปรไฟล์ (Auth / UI / Settings) | `lib/features/auth/`<br>`lib/features/settings_budget/` |
-| 2 | 67030142 | นาย พัชรพล กลิ่นอ่อน | วางแผนมื้ออาหาร (Weekly Planner / CRUD) | `lib/features/meal_planner/`<br>`lib/features/home/` |
-| 3 | 67030059 | น.ส. ชุธิพร เชาว์ชัย | AI แนะนำเมนู & คลังสูตรอาหาร (Gemini / Recipe) | `lib/features/ai_recommendation/`<br>`lib/features/recipe_search/` |
-| 4 | 67030154 | นาย ปิยะวิทย์ พลศรี | Backend REST API, SQLite DB & CI Pipeline | `backend/`<br>`lib/core/network/`<br>`.github/workflows/` |
-
----
-
-## 🎯 เกณฑ์การประเมินวิชา MDSD (20 คะแนนเต็ม)
-
-| ส่วนที่ | องค์ประกอบประเมิน | คะแนน | สถานะในโค้ดปัจจุบัน | โฟลเดอร์ที่เกี่ยวข้อง |
-| :---: | :--- | :---: | :---: | :--- |
-| **1** | **UI/UX ตาม Material Design 3 + Prototype** | 3 (15%) | ✅ สมบูรณ์ (ธีม PROM KIN Matcha Green `#416448` + ฟอนต์ Kanit ตรงตามแบบ `PROM-KIN.html`) | `lib/core/theme/`<br>`lib/core/constants/` |
-| **2** | **REST API / Firebase Backend ≥ 2 บริการ** | 3 (15%) | ✅ สมบูรณ์ (Express REST API ใน `backend/` + Firebase Auth & Firestore Client) | `backend/`<br>`lib/core/network/` |
-| **3** | **AI Feature (สอดคล้องกับแอปและครบ Flow)** | 3 (15%) | ✅ สมบูรณ์ (Google Gemini AI แนะนำเมนูตามงบ แคลอรี และวัตถุดิบที่แพ้ พร้อมกดเพิ่มลงแผนได้ทันที) | `lib/features/ai_recommendation/`<br>`backend/src/routes/ai.routes.js` |
-| **4** | **Local Database + Firestore Sync** | 3 (15%) | ✅ สมบูรณ์ (SQLite ด้วย `sqflite` + `SharedPreferences` + Firebase Service) | `lib/core/database/`<br>`lib/features/meal_planner/data/` |
-| **5** | **Testing ครบ 4 ประเภท + Coverage ≥ 70%** | 5 (25%) | ✅ สมบูรณ์ (Unit, Widget, Integration, Security) **21/21 ผ่านทั้งหมด Coverage 73.66%** | `test/` |
-| **6** | **GitHub Actions CI (Build & Test อัตโนมัติ)** | 3 (15%) | ✅ สมบูรณ์ (analyze + test coverage + build apk อัตโนมัติทุก push/pull_request) | `.github/workflows/ci.yml` |
-
----
-
 ## 🏗️ โครงสร้างสถาปัตยกรรม (Project Structure)
 
 โปรเจกต์แบ่งเป็น 2 ส่วนหลัก เพื่อให้เพื่อนร่วมทีมทำงานร่วมกันได้สะดวก ไม่เกิด Git Conflict:
