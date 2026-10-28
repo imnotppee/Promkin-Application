@@ -22,6 +22,7 @@ class DatabaseHelper {
       path,
       version: AppConstants.databaseVersion,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -39,9 +40,26 @@ class DatabaseHelper {
         fat REAL NOT NULL,
         date TEXT NOT NULL,
         isCompleted INTEGER NOT NULL DEFAULT 0,
-        notes TEXT
+        notes TEXT,
+        emoji TEXT DEFAULT '🍛',
+        time TEXT DEFAULT '12:00',
+        tags TEXT DEFAULT ''
       )
     ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      try {
+        await db.execute("ALTER TABLE meals ADD COLUMN emoji TEXT DEFAULT '🍛'");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE meals ADD COLUMN time TEXT DEFAULT '12:00'");
+      } catch (_) {}
+      try {
+        await db.execute("ALTER TABLE meals ADD COLUMN tags TEXT DEFAULT ''");
+      } catch (_) {}
+    }
   }
 
   Future<int> insertMeal(Map<String, dynamic> row) async {
@@ -59,7 +77,7 @@ class DatabaseHelper {
       'meals',
       where: 'date = ?',
       whereArgs: [date],
-      orderBy: 'mealType ASC',
+      orderBy: 'time ASC, id ASC',
     );
   }
 
@@ -79,11 +97,14 @@ class DatabaseHelper {
     return await db.delete('meals', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> clearAllMeals() async {
+    final db = await database;
+    await db.delete('meals');
+  }
+
   Future<void> close() async {
-    final db = _database;
-    if (db != null) {
-      await db.close();
-      _database = null;
-    }
+    final db = await database;
+    db.close();
+    _database = null;
   }
 }
