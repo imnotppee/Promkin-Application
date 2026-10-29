@@ -40,6 +40,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> loadForUser(String userId) async {
+    if (!FirebaseService.instance.isInitialized) return;
     try {
       final profile = await FirebaseService.instance.getUserProfile(userId);
       final saved = profile?['settings'];
@@ -92,9 +93,10 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> _syncForCurrentUser() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null || !FirebaseService.instance.isInitialized) return;
+    if (!FirebaseService.instance.isInitialized) return;
     try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
       await FirebaseService.instance.syncUserSettings(userId, {
         'dailyBudget': _dailyBudget,
         'monthlyBudget': _monthlyBudget,

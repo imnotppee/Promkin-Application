@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_repository.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
+import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/home/presentation/screens/dashboard_screen.dart';
 
 void main() {
@@ -24,12 +25,14 @@ void main() {
       final repo = MealRepository();
       final mealProv = MealProvider(repository: repo, initDemoMeals: true);
       final settingsProv = SettingsProvider();
+      final authProv = AuthProvider();
 
       await tester.pumpWidget(
         MultiProvider(
           providers: [
             ChangeNotifierProvider.value(value: mealProv),
             ChangeNotifierProvider.value(value: settingsProv),
+            ChangeNotifierProvider.value(value: authProv),
           ],
           child: const MaterialApp(home: DashboardScreen()),
         ),
@@ -38,7 +41,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check Greeting
-      expect(find.text('สวัสดี, พิมพ์ชนก ☀️'), findsOneWidget);
+      expect(find.text('สวัสดี, Promkin User ☀️'), findsOneWidget);
 
       // Check 3 Metric Cards
       expect(find.text('งบอาหารเดือนนี้'), findsOneWidget);

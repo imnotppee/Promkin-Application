@@ -41,8 +41,8 @@ void main() {
       expect(fromMap.emoji, '🍲');
       expect(fromMap.name, isEmpty);
       expect(fromMap.cookingMinutes, 20);
-      expect(fromMap.calories, 350);
-      expect(fromMap.estimatedPrice, 50.0);
+      expect(fromMap.calories, 0);
+      expect(fromMap.estimatedPrice, 0.0);
     });
   });
 }

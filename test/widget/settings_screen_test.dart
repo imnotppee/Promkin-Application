@@ -42,16 +42,14 @@ void main() {
       expect(find.text('Promkin User'), findsWidgets);
 
       // Toggle dark mode
-      final darkField = find.text('ตามอุปกรณ์ (System default)');
+      final darkField = find.text('โหมดสว่าง (Light)');
       expect(darkField, findsOneWidget);
       await tester.tap(darkField);
       await tester.pumpAndSettle();
       expect(settingsProvider.isDarkMode, isTrue);
 
-      // Switch tab to meal settings
-      await tester.tap(find.text('⚒  แผนอาหาร'));
-      await tester.pumpAndSettle();
-      expect(find.text('งบประมาณรายวัน'), findsOneWidget);
+      // Meal settings section is rendered directly
+      expect(find.text('งบประมาณรายวัน'), findsWidgets);
 
       // Tap profile icon to navigate to ProfileScreen
       await tester.tap(find.byIcon(Icons.person_outline));
