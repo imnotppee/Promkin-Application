@@ -16,7 +16,8 @@ void main() {
       expect(PreferencesHelper.getDailyCalories(), 2000);
       expect(PreferencesHelper.getMealsPerDay(), 3);
       expect(PreferencesHelper.isDarkMode(), isFalse);
-      expect(PreferencesHelper.isReminderEnabled(), isTrue);
+      expect(PreferencesHelper.isReminderEnabled(), isFalse);
+      expect(PreferencesHelper.hasHandledNotificationPrompt(), isFalse);
 
       // Test updating values
       await PreferencesHelper.setDailyBudget(250.0);
@@ -36,6 +37,9 @@ void main() {
 
       await PreferencesHelper.setReminderEnabled(false);
       expect(PreferencesHelper.isReminderEnabled(), isFalse);
+
+      await PreferencesHelper.setNotificationPromptHandled(true);
+      expect(PreferencesHelper.hasHandledNotificationPrompt(), isTrue);
     });
   });
 }
