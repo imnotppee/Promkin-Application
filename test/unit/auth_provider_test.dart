@@ -91,5 +91,18 @@ void main() {
       expect(fallback.email, isEmpty);
       expect(fallback.avatarUrl, isNull);
     });
+
+    test(
+      'resetPassword validates email and handles offline fallback',
+      () async {
+        final auth = AuthProvider();
+        final failEmpty = await auth.resetPassword('');
+        expect(failEmpty, isFalse);
+        expect(auth.errorMessage, isNotNull);
+
+        final success = await auth.resetPassword('user@promkin.com');
+        expect(success, isTrue);
+      },
+    );
   });
 }

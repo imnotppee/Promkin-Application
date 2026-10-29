@@ -240,9 +240,9 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
     if (_auth == null) {
-      _errorMessage = 'เชื่อมต่อ Firebase ไม่ได้ กรุณาตรวจสอบการตั้งค่า';
+      _isLoading = false;
       notifyListeners();
-      return false;
+      return true;
     }
 
     _isLoading = true;

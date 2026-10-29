@@ -52,6 +52,37 @@ void main() {
       expect(updated.isCompleted, isTrue);
     });
 
+    test('fromMap parses string numbers and tags string correctly', () {
+      final map = {
+        'id': 'm_str',
+        'name': 'ก๋วยเตี๋ยว',
+        'mealType': 'อาหารกลางวัน',
+        'price': '65.5',
+        'calories': '450',
+        'protein': '18.5',
+        'carbs': '55.0',
+        'fat': '12.0',
+        'tags': 'โปรตีนสูง,จานเดียว',
+        'isCompleted': 1,
+      };
+
+      final meal = MealModel.fromMap(map);
+      expect(meal.price, 65.5);
+      expect(meal.calories, 450);
+      expect(meal.protein, 18.5);
+      expect(meal.carbs, 55.0);
+      expect(meal.fat, 12.0);
+      expect(meal.tags, ['โปรตีนสูง', 'จานเดียว']);
+      expect(meal.isCompleted, isTrue);
+
+      final fallback = MealModel.fromMap({});
+      expect(fallback.price, 0.0);
+      expect(fallback.calories, 0);
+      expect(fallback.protein, 0.0);
+      expect(fallback.tags, isEmpty);
+      expect(fallback.isCompleted, isFalse);
+    });
+
     test('toFirestoreMap should correctly map fields and meal types', () {
       final types = [
         'มื้อเช้า',
@@ -88,5 +119,45 @@ void main() {
         expect(firestoreMap['calories'], 400);
       }
     });
+
+    test(
+      'toFirestoreMap includes userId when present and handles all aliases',
+      () {
+        final meal = MealModel(
+          id: 'm_uid',
+          name: 'สลัด',
+          mealType: 'อาหารเช้า',
+          price: 50.0,
+          calories: 200,
+          date: '2026-10-29',
+          time: '07:30',
+        );
+
+        final map = meal.toFirestoreMap(
+          mealPlanId: 'p1',
+          userId: 'u_test',
+          source: 'ai',
+        );
+        expect(map['user_id'], 'u_test');
+        expect(map['meal_type'], 'breakfast');
+
+        final variations = {
+          'breakfast': 'breakfast',
+          'อาหารเช้า': 'breakfast',
+          'lunch': 'lunch',
+          'อาหารกลางวัน': 'lunch',
+          'dinner': 'dinner',
+          'อาหารเย็น': 'dinner',
+          'snack': 'snack',
+          'อาหารว่าง': 'snack',
+        };
+
+        for (final entry in variations.entries) {
+          final m = meal.copyWith(mealType: entry.key);
+          final f = m.toFirestoreMap(mealPlanId: 'p', source: 'src');
+          expect(f['meal_type'], entry.value);
+        }
+      },
+    );
   });
 }

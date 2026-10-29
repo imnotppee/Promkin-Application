@@ -48,11 +48,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(settingsProvider.isDarkMode, isTrue);
 
-      // Meal settings section is rendered directly
+      // Switch to meal preferences tab
+      await tester.tap(find.text('แผนอาหาร'));
+      await tester.pumpAndSettle();
       expect(find.text('งบประมาณรายวัน'), findsWidgets);
 
-      // Tap profile icon to navigate to ProfileScreen
-      await tester.tap(find.byIcon(Icons.person_outline));
+      // Switch back to account tab and tap edit to navigate to ProfileScreen
+      await tester.tap(find.text('แอป & บัญชี'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.edit_outlined));
       await tester.pumpAndSettle();
       expect(find.text('โปรไฟล์ผู้ใช้'), findsOneWidget);
     },
