@@ -134,10 +134,12 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   List<RecipeModel> get _filteredRecipes {
     final query = _searchController.text.trim().toLowerCase();
     return _catalog.where((recipe) {
-      final matchesCat = _selectedCategory == 'ทั้งหมด' ||
+      final matchesCat =
+          _selectedCategory == 'ทั้งหมด' ||
           recipe.category == _selectedCategory ||
           recipe.tags.contains(_selectedCategory);
-      final matchesQuery = query.isEmpty ||
+      final matchesQuery =
+          query.isEmpty ||
           recipe.name.toLowerCase().contains(query) ||
           recipe.description.toLowerCase().contains(query);
       return matchesCat && matchesQuery;
@@ -151,9 +153,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.paper,
-      appBar: AppBar(
-        title: const Text('ค้นหาเมนู'),
-      ),
+      appBar: AppBar(title: const Text('ค้นหาเมนู')),
       body: Column(
         children: [
           // Search & Filter Header
@@ -300,7 +300,8 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
                                     vertical: 8,
                                   ),
                                   minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 onPressed: () {
                                   AddToPlanDialog.show(

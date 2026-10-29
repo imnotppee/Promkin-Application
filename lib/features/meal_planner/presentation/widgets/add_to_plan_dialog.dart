@@ -309,7 +309,9 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () async {
-                    final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+                    final dateStr = DateFormat(
+                      'yyyy-MM-dd',
+                    ).format(_selectedDate);
                     final newMeal = MealModel(
                       id: DateTime.now().millisecondsSinceEpoch.toString(),
                       name: widget.recipeName,

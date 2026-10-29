@@ -211,7 +211,9 @@ class FirebaseService {
     String userId,
     Map<String, dynamic> profile,
   ) async {
-    _checkInitialized();
+    if (!_isInitialized) {
+      return profile;
+    }
 
     if (userId.trim().isEmpty) {
       throw ArgumentError('User ID must not be empty.');

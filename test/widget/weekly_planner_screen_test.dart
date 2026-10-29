@@ -21,9 +21,7 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: mealProv,
-          child: const MaterialApp(
-            home: WeeklyPlannerScreen(),
-          ),
+          child: const MaterialApp(home: WeeklyPlannerScreen()),
         ),
       );
 

@@ -1,4 +1,3 @@
-
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/core/database/database_helper.dart';
 import 'package:promkin_app/core/services/firebase_service.dart';
@@ -15,11 +14,9 @@ class MealRepository {
   // Authentication is implemented.
   static const String _defaultUserId = 'usr_001';
 
-  MealRepository({
-    DatabaseHelper? dbHelper,
-    FirebaseService? firebaseService,
-  }) : _dbHelper = dbHelper ?? DatabaseHelper.instance,
-       _firebaseService = firebaseService ?? FirebaseService.instance;
+  MealRepository({DatabaseHelper? dbHelper, FirebaseService? firebaseService})
+    : _dbHelper = dbHelper ?? DatabaseHelper.instance,
+      _firebaseService = firebaseService ?? FirebaseService.instance;
 
   Future<List<MealModel>> getMealsByDate(String date) async {
     try {

@@ -6,6 +6,7 @@ import 'package:promkin_app/core/utils/currency_formatter.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
 import 'package:promkin_app/features/meal_planner/presentation/screens/add_meal_screen.dart';
+import 'package:promkin_app/features/settings_budget/presentation/screens/settings_screen.dart';
 
 class WeeklyPlannerScreen extends StatefulWidget {
   const WeeklyPlannerScreen({super.key});
@@ -47,6 +48,16 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
       appBar: AppBar(
         title: const Text('วางแผนมื้ออาหาร'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'ตั้งค่าอาหารและงบประมาณ',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.chevron_left),
             onPressed: () {
@@ -110,7 +121,8 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                       .where((m) => m.date == dateStr)
                       .toList();
 
-                  final isToday = DateFormat('yyyy-MM-dd').format(DateTime.now()) ==
+                  final isToday =
+                      DateFormat('yyyy-MM-dd').format(DateTime.now()) ==
                       dateStr;
 
                   return ListTile(
@@ -123,8 +135,9 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                         Text(
                           '${_thaiDayNames[i]} ${dayDate.day} ${DateFormat('MMM', 'th_TH').format(dayDate)}',
                           style: TextStyle(
-                            fontWeight:
-                                isToday ? FontWeight.bold : FontWeight.w600,
+                            fontWeight: isToday
+                                ? FontWeight.bold
+                                : FontWeight.w600,
                             color: isToday ? AppColors.primary : AppColors.ink,
                           ),
                         ),
@@ -198,8 +211,9 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     DateTime date,
   ) {
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
-    final dayMeals =
-        mealProvider.meals.where((m) => m.date == dateStr).toList();
+    final dayMeals = mealProvider.meals
+        .where((m) => m.date == dateStr)
+        .toList();
     final totalCalories = dayMeals.fold<int>(0, (a, b) => a + b.calories);
     final totalCost = dayMeals.fold<double>(0.0, (a, b) => a + b.price);
 
@@ -210,9 +224,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => setState(() => _selectedDayDetail = null),
         ),
-        title: Text(
-          DateFormat('EEEE d MMMM', 'th_TH').format(date),
-        ),
+        title: Text(DateFormat('EEEE d MMMM', 'th_TH').format(date)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -276,7 +288,9 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                 onPressed: () {
                   mealProvider.setSelectedDate(date);
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => AddMealScreen(date: date)),
+                    MaterialPageRoute(
+                      builder: (_) => AddMealScreen(date: date),
+                    ),
                   );
                 },
               ),
@@ -323,10 +337,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    meal.emoji,
-                    style: const TextStyle(fontSize: 22),
-                  ),
+                  child: Text(meal.emoji, style: const TextStyle(fontSize: 22)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -364,10 +375,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
               const Divider(color: AppColors.line, height: 20),
               Text(
                 meal.notes!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.muted,
-                ),
+                style: const TextStyle(fontSize: 12, color: AppColors.muted),
               ),
             ],
           ],
