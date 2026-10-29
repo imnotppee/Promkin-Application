@@ -1,7 +1,7 @@
 class AppConstants {
   // Database
   static const String databaseName = 'promkin.db';
-  static const int databaseVersion = 3;
+  static const int databaseVersion = 4;
 
   // Defaults
   static const double defaultDailyBudget = 300.0; // 300 THB/day
@@ -10,6 +10,7 @@ class AppConstants {
 
   // Shared Preferences Keys
   static const String keyDailyBudget = 'pref_daily_budget';
+  static const String keyMonthlyBudget = 'pref_monthly_budget';
   static const String keyDailyCalories = 'pref_daily_calories';
   static const String keyMealsPerDay = 'pref_meals_per_day';
   static const String keyDarkMode = 'pref_dark_mode';

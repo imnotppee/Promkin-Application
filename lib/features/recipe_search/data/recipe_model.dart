@@ -69,8 +69,10 @@ class RecipeModel {
       name: map['name'] ?? '',
       category: map['category'] ?? 'อาหารไทย',
       cookingMinutes: (map['cookingMinutes'] as num?)?.toInt() ?? 20,
-      calories: (map['calories'] as num?)?.toInt() ?? 350,
-      estimatedPrice: (map['estimatedPrice'] as num?)?.toDouble() ?? 50.0,
+      // TheMealDB does not provide nutrition or prices. Keep missing values
+      // missing instead of presenting invented numbers as recipe facts.
+      calories: (map['calories'] as num?)?.toInt() ?? 0,
+      estimatedPrice: (map['estimatedPrice'] as num?)?.toDouble() ?? 0,
       description: map['description'] ?? '',
       imageUrl: map['imageUrl'] ?? '',
       area: map['area'] ?? '',

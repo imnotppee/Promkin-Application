@@ -18,8 +18,6 @@ class WeeklyPlannerScreen extends StatefulWidget {
 }
 
 class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
-  late DateTime _weekStart = _monday(DateTime.now());
-  late DateTime _selectedDate = DateTime.now();
   DateTime _monday(DateTime d) =>
       DateTime(d.year, d.month, d.day).subtract(Duration(days: d.weekday - 1));
   String _iso(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
@@ -28,14 +26,16 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<MealProvider>();
     final settings = context.watch<SettingsProvider>();
+    final selectedDate = provider.selectedDate;
+    final weekStart = _monday(selectedDate);
     final selectedMeals =
-        provider.allMeals.where((m) => m.date == _iso(_selectedDate)).toList()
+        provider.allMeals.where((m) => m.date == _iso(selectedDate)).toList()
           ..sort((a, b) => a.time.compareTo(b.time));
-    final weekEnd = _weekStart.add(const Duration(days: 6));
+    final weekEnd = weekStart.add(const Duration(days: 6));
     final weekMeals = provider.allMeals
         .where(
           (m) =>
-              m.date.compareTo(_iso(_weekStart)) >= 0 &&
+              m.date.compareTo(_iso(weekStart)) >= 0 &&
               m.date.compareTo(_iso(weekEnd)) <= 0,
         )
         .toList();
@@ -86,19 +86,10 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                             ],
                           ),
                         ),
-                        IconButton.filledTonal(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SettingsScreen(),
-                            ),
-                          ),
-                          icon: const Icon(Icons.tune_rounded),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 18),
-                    _weekToolbar(weekEnd),
+                    _weekToolbar(weekStart, weekEnd),
                     const SizedBox(height: 17),
                     Row(
                       children: [
@@ -122,15 +113,15 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: 7,
-                        separatorBuilder: (_, __) => const SizedBox(width: 10),
+                        separatorBuilder: (_, _) => const SizedBox(width: 10),
                         itemBuilder: (context, index) {
-                          final date = _weekStart.add(Duration(days: index));
+                          final date = weekStart.add(Duration(days: index));
                           final meals = provider.allMeals
                               .where((m) => m.date == _iso(date))
                               .toList();
                           final isSelected = DateUtils.isSameDay(
                             date,
-                            _selectedDate,
+                            selectedDate,
                           );
                           final isToday = DateUtils.isSameDay(
                             date,
@@ -263,7 +254,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'มื้ออาหารวัน${DateFormat('EEEE d MMM', 'th_TH').format(_selectedDate)}',
+                            'มื้ออาหารวัน${DateFormat('EEEE d MMM', 'th_TH').format(selectedDate)}',
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 17,
@@ -333,28 +324,26 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   void _selectDate(DateTime date) {
-    setState(() => _selectedDate = date);
     context.read<MealProvider>().setSelectedDate(date);
   }
 
   void _changeWeek(int amount) {
-    setState(() {
-      _weekStart = _weekStart.add(Duration(days: amount * 7));
-      _selectedDate = _selectedDate.add(Duration(days: amount * 7));
-    });
-    context.read<MealProvider>().setSelectedDate(_selectedDate);
+    final provider = context.read<MealProvider>();
+    provider.setSelectedDate(
+      provider.selectedDate.add(Duration(days: amount * 7)),
+    );
   }
 
   void _addMeal() {
     final provider = context.read<MealProvider>();
-    provider.setSelectedDate(_selectedDate);
+    final selectedDate = provider.selectedDate;
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => AddMealScreen(date: _selectedDate)),
+      MaterialPageRoute(builder: (_) => AddMealScreen(date: selectedDate)),
     );
   }
 
-  Widget _weekToolbar(DateTime end) => Container(
+  Widget _weekToolbar(DateTime start, DateTime end) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
     decoration: BoxDecoration(
       color: const Color(0xFFF3F1ED),
@@ -371,7 +360,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
         const SizedBox(width: 7),
         Expanded(
           child: Text(
-            '${DateFormat('d MMM', 'th_TH').format(_weekStart)} – ${DateFormat('d MMM yyyy', 'th_TH').format(end)}',
+            '${DateFormat('d MMM', 'th_TH').format(start)} – ${DateFormat('d MMM yyyy', 'th_TH').format(end)}',
             textAlign: TextAlign.center,
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),

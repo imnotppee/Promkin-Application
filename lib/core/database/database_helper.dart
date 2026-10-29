@@ -44,7 +44,9 @@ class DatabaseHelper {
         emoji TEXT NOT NULL DEFAULT '🍽️',
         time TEXT NOT NULL DEFAULT '12:00',
         tags TEXT NOT NULL DEFAULT '',
-        imageUrl TEXT NOT NULL DEFAULT ''
+        imageUrl TEXT NOT NULL DEFAULT '',
+        source TEXT NOT NULL DEFAULT 'ai',
+        sourceId TEXT
       )
     ''');
   }
@@ -65,6 +67,12 @@ class DatabaseHelper {
       await db.execute(
         "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
       );
+    }
+    if (oldVersion < 4) {
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN source TEXT NOT NULL DEFAULT 'ai'",
+      );
+      await db.execute('ALTER TABLE meals ADD COLUMN sourceId TEXT');
     }
   }
 

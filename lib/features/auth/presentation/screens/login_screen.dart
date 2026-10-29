@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
-import 'package:promkin_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,31 +41,15 @@ class _LoginScreenState extends State<LoginScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.maybePop(context),
-                        icon: const Icon(Icons.arrow_back),
+                  child: Center(
+                    child: Text(
+                      _register ? 'Create Account' : 'Sign In',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
                       ),
-                      Expanded(
-                        child: Text(
-                          _register ? 'Create Account' : 'Sign In',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      IconButton.filled(
-                        onPressed: () {},
-                        icon: const Icon(Icons.person_outline),
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -76,30 +59,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: 13),
                     Center(
-                      child: Container(
-                        width: 68,
-                        height: 68,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.eco_rounded,
-                          color: Colors.white,
-                          size: 34,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 11),
-                    const Center(
-                      child: Text(
-                        'P R O M K I N',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                          color: AppColors.primary,
-                        ),
+                      child: Image.asset(
+                        'assets/images/promkin_logo.png',
+                        width: 154,
+                        height: 154,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.restaurant_rounded,
+                              color: AppColors.primary,
+                              size: 64,
+                            ),
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -238,23 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: TextStyle(fontSize: 12),
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const ForgotPasswordScreen(),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'ลืมรหัสผ่าน?',
-                                    style: TextStyle(
-                                      color: AppColors.tertiary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           ],
@@ -330,47 +283,59 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () {},
-                                  icon: const Text(
-                                    'G',
-                                    style: TextStyle(
-                                      color: Color(0xFF4285F4),
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                  label: const Text('Google'),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: auth.isLoading
+                                  ? null
+                                  : _signInWithGoogle,
+                              icon: const Text(
+                                'G',
+                                style: TextStyle(
+                                  color: Color(0xFF4285F4),
+                                  fontWeight: FontWeight.w900,
                                 ),
                               ),
-                              const SizedBox(width: 9),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.apple,
-                                    color: AppColors.ink,
-                                  ),
-                                  label: const Text('Apple ID'),
-                                ),
-                              ),
-                            ],
+                              label: const Text('ดำเนินการต่อด้วย Google'),
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
                     Center(
-                      child: Text(
-                        _register
-                            ? 'มีบัญชีอยู่แล้ว?  เข้าสู่ระบบ'
-                            : 'ยังไม่มีบัญชีใช่หรือไม่?  สมัครสมาชิกฟรี',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.ink,
+                      child: TextButton(
+                        onPressed: () => setState(() {
+                          _register = !_register;
+                        }),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.ink,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text.rich(
+                          TextSpan(
+                            text: _register
+                                ? 'มีบัญชีอยู่แล้ว?  '
+                                : 'ยังไม่มีบัญชีใช่หรือไม่?  ',
+                            style: const TextStyle(fontSize: 13),
+                            children: [
+                              TextSpan(
+                                text: _register
+                                    ? 'เข้าสู่ระบบ'
+                                    : 'สมัครสมาชิกฟรี',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
@@ -478,10 +443,17 @@ class _LoginScreenState extends State<LoginScreen> {
         : await auth.login(_email.text, _password.text);
     if (!mounted) return;
     if (success) {
-      Navigator.maybePop(context);
+      // AuthProvider updates the root authentication gate after success.
     } else {
-      _message('เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง');
+      _message(auth.errorMessage ?? 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง');
     }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    final auth = context.read<AuthProvider>();
+    final success = await auth.signInWithGoogle();
+    if (!mounted || success || auth.errorMessage == null) return;
+    _message(auth.errorMessage!);
   }
 
   void _message(String value) => ScaffoldMessenger.of(

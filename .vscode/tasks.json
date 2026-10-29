@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "PromKin: connect Android to local API",
+      "type": "process",
+      "command": "${env:LOCALAPPDATA}/Android/Sdk/platform-tools/adb.exe",
+      "args": ["reverse", "tcp:5000", "tcp:5000"],
+      "problemMatcher": []
+    }
+  ]
+}

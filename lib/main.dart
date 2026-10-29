@@ -12,6 +12,7 @@ import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dar
 import 'package:promkin_app/features/ai_recommendation/presentation/ai_provider.dart';
 import 'package:promkin_app/features/nutrition/presentation/nutrition_provider.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
+import 'package:promkin_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:promkin_app/features/home/presentation/screens/main_navigation_screen.dart';
 
 void main() async {
@@ -56,7 +57,11 @@ class PromkinApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: const MainNavigationScreen(),
+            home: Consumer<AuthProvider>(
+              builder: (context, auth, _) => auth.isAuthenticated
+                  ? const MainNavigationScreen()
+                  : const LoginScreen(),
+            ),
           );
         },
       ),

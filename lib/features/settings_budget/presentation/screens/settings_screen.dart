@@ -14,8 +14,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int _section = 0;
-
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
@@ -66,31 +64,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 sliver: SliverList.list(
                   children: [
                     const Text(
-                      'จัดการบัญชีผู้ใช้และการตั้งค่าแผนอาหาร',
+                      'จัดการบัญชีและการตั้งค่าการใช้งาน',
                       style: TextStyle(color: AppColors.muted, fontSize: 13),
                     ),
                     const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F0EC),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Row(
-                        children: [
-                          _tabButton('☷  แอป & บัญชี', 0),
-                          _tabButton('⚒  แผนอาหาร', 1),
-                        ],
-                      ),
+                    _accountSettings(
+                      user?.name ?? 'พิมพ์ชนก',
+                      user?.email ?? 'โปรไฟล์ PROM KIN',
                     ),
-                    const SizedBox(height: 18),
-                    if (_section == 0)
-                      _accountSettings(
-                        user?.name ?? 'พิมพ์ชนก',
-                        user?.email ?? 'โปรไฟล์ PROM KIN',
-                      )
-                    else
-                      _mealSettings(settings),
+                    const SizedBox(height: 16),
+                    _mealSettings(settings),
                     const SizedBox(height: 22),
                     Center(
                       child: Text(
@@ -104,20 +87,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      onPressed: () =>
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('บันทึกการตั้งค่าแล้ว'),
-                            ),
-                          ),
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('บันทึกการตั้งค่า'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFB2C1AD),
-                        foregroundColor: AppColors.primary,
-                        minimumSize: const Size.fromHeight(52),
+                    const SizedBox(height: 12),
+                    const Center(
+                      child: Text(
+                        'การตั้งค่าจะบันทึกอัตโนมัติ',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12),
                       ),
                     ),
                   ],
@@ -129,30 +103,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  Widget _tabButton(String label, int index) => Expanded(
-    child: InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: () => setState(() => _section = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: _section == index ? AppColors.paper : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            color: _section == index ? AppColors.ink : AppColors.muted,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    ),
-  );
 
   Widget _accountSettings(String name, String subtitle) => Container(
     padding: const EdgeInsets.all(19),
@@ -237,13 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         const SizedBox(height: 7),
-        _settingField(
-          'ไทย (Thai)',
-          Icons.expand_more,
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('รองรับภาษาไทยในแอปนี้')),
-          ),
-        ),
+        _settingField('ไทย (Thai)', Icons.language),
         const SizedBox(height: 17),
         const Text(
           'รูปแบบการแสดงผล',
@@ -256,9 +200,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 7),
         Consumer<SettingsProvider>(
           builder: (context, settings, _) => _settingField(
-            settings.isDarkMode
-                ? 'โหมดมืด (Dark)'
-                : 'ตามอุปกรณ์ (System default)',
+            settings.isDarkMode ? 'โหมดมืด (Dark)' : 'โหมดสว่าง (Light)',
             Icons.expand_more,
             onTap: () => settings.toggleDarkMode(!settings.isDarkMode),
           ),

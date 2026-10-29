@@ -118,14 +118,10 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
                                     details.imageUrl,
                                     height: 220,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const SizedBox(
-                                          height: 100,
-                                          child: Icon(
-                                            Icons.restaurant,
-                                            size: 48,
-                                          ),
-                                        ),
+                                    errorBuilder: (_, _, _) => const SizedBox(
+                                      height: 100,
+                                      child: Icon(Icons.restaurant, size: 48),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 14),
@@ -188,9 +184,9 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
                                   recipeName: details.name,
                                   emoji: details.emoji,
                                   imageUrl: details.imageUrl,
-                                  price: details.estimatedPrice > 0
-                                      ? details.estimatedPrice
-                                      : 50,
+                                  source: 'themealdb',
+                                  sourceId: details.id,
+                                  price: details.estimatedPrice,
                                   calories: details.calories > 0
                                       ? details.calories
                                       : null,
@@ -236,7 +232,9 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
       recipeName: details.name,
       emoji: details.emoji,
       imageUrl: details.imageUrl,
-      price: details.estimatedPrice > 0 ? details.estimatedPrice : 50,
+      source: 'themealdb',
+      sourceId: details.id,
+      price: details.estimatedPrice,
       calories: details.calories > 0 ? details.calories : null,
       protein: details.protein > 0 ? details.protein : null,
       carbs: details.carbs > 0 ? details.carbs : null,
@@ -467,7 +465,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
                                       width: 80,
                                       height: 80,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
+                                      errorBuilder: (_, _, _) => Container(
                                         width: 80,
                                         height: 80,
                                         color: AppColors.primaryContainer,

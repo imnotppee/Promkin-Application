@@ -27,6 +27,8 @@ class ApiClient {
       );
 
       return _processResponse(response);
+    } on ApiException {
+      rethrow;
     } catch (e) {
       throw ApiException('Network error occurred: $e');
     }
@@ -45,6 +47,8 @@ class ApiClient {
       );
 
       return _processResponse(response);
+    } on ApiException {
+      rethrow;
     } catch (e) {
       throw ApiException('Network error occurred: $e');
     }

@@ -5,6 +5,7 @@ import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/widgets/promkin_header.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
 import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
+import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
 import 'package:promkin_app/features/meal_planner/presentation/screens/add_meal_screen.dart';
@@ -35,6 +36,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final allMeals = context.watch<MealProvider>().allMeals;
     final mealProvider = context.read<MealProvider>();
     final settings = context.watch<SettingsProvider>();
+    final user = context.watch<AuthProvider>().currentUser;
+    final userName = user?.name.trim().isNotEmpty == true
+        ? user!.name.trim()
+        : 'ผู้ใช้';
     final dayMeals =
         allMeals.where((meal) => meal.date == _iso(_selectedDate)).toList()
           ..sort((a, b) => a.time.compareTo(b.time));
@@ -88,7 +93,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'สวัสดี, พิมพ์ชนก ☀️',
+                                  'สวัสดี, $userName ☀️',
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineSmall

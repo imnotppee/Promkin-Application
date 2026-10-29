@@ -16,6 +16,8 @@ class MealModel {
   final String time;
   final List<String> tags;
   final String imageUrl;
+  final String source;
+  final String? sourceId;
 
   MealModel({
     required this.id,
@@ -33,6 +35,8 @@ class MealModel {
     this.time = '12:00',
     this.tags = const [],
     this.imageUrl = '',
+    this.source = 'ai',
+    this.sourceId,
   });
 
   MealModel copyWith({
@@ -51,6 +55,8 @@ class MealModel {
     String? time,
     List<String>? tags,
     String? imageUrl,
+    String? source,
+    String? sourceId,
   }) {
     return MealModel(
       id: id ?? this.id,
@@ -68,6 +74,8 @@ class MealModel {
       time: time ?? this.time,
       tags: tags ?? this.tags,
       imageUrl: imageUrl ?? this.imageUrl,
+      source: source ?? this.source,
+      sourceId: sourceId ?? this.sourceId,
     );
   }
 
@@ -90,6 +98,8 @@ class MealModel {
       'time': time,
       'tags': tags.join(','),
       'imageUrl': imageUrl,
+      'source': source,
+      'sourceId': sourceId,
     };
   }
 
@@ -104,7 +114,7 @@ class MealModel {
     return {
       'meal_plan_id': mealPlanId,
       'source': source,
-      'source_id': sourceId,
+      'source_id': sourceId ?? this.sourceId,
       'recipe_name': name,
       'meal_type': _toFirestoreMealType(mealType),
       'scheduled_at': Timestamp.fromDate(dateTime),
@@ -180,6 +190,8 @@ class MealModel {
       time: map['time'] ?? '12:00',
       tags: parsedTags,
       imageUrl: map['imageUrl']?.toString() ?? '',
+      source: map['source']?.toString() ?? 'ai',
+      sourceId: map['sourceId']?.toString(),
     );
   }
 }
