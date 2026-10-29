@@ -90,7 +90,7 @@ router.get('/:id', async (req, res) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: process.env.OPENAI_MODEL || 'gpt-6-luna',
+            model: process.env.OPENAI_MODEL || 'gpt-5-mini',
             reasoning: { effort: 'none' },
             max_output_tokens: 250,
             input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
