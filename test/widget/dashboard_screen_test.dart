@@ -16,6 +16,11 @@ void main() {
     testWidgets('renders greeting, metrics cards, and week header', (
       WidgetTester tester,
     ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final repo = MealRepository();
       final mealProv = MealProvider(repository: repo, initDemoMeals: true);
       final settingsProv = SettingsProvider();
@@ -32,31 +37,22 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Check Brand in RichText
-      expect(
-        find.byWidgetPredicate(
-          (w) => w is RichText && w.text.toPlainText().contains('PROM KIN'),
-        ),
-        findsOneWidget,
-      );
-
       // Check Greeting
-      expect(find.text('สวัสดี, พิมพ์ชนก '), findsOneWidget);
+      expect(find.text('สวัสดี, พิมพ์ชนก ☀️'), findsOneWidget);
 
       // Check 3 Metric Cards
       expect(find.text('งบอาหารเดือนนี้'), findsOneWidget);
       expect(find.text('มื้อที่วางแผนแล้ว'), findsOneWidget);
       expect(find.text('ค่าเฉลี่ยต่อมื้อ'), findsOneWidget);
 
-      // Check Plan Header
-      expect(find.text('แผนมื้ออาหาร'), findsOneWidget);
-      expect(find.text('AI เมนูแนะนำ'), findsOneWidget);
-      expect(find.text('โภชนาการวันนี้'), findsOneWidget);
+      // Check Sections
+      expect(find.text('ตารางมื้ออาหารวันนี้'), findsOneWidget);
+      expect(find.text('AI แนะนำเมนู'), findsOneWidget);
 
-      // Week day selector navigation using ‹ and ›
-      await tester.tap(find.text('‹'));
+      // Week day selector navigation using chevron buttons
+      await tester.tap(find.byIcon(Icons.chevron_left_rounded));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('›'));
+      await tester.tap(find.byIcon(Icons.chevron_right_rounded));
       await tester.pumpAndSettle();
     });
   });

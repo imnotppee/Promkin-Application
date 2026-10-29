@@ -91,7 +91,7 @@ class DatabaseHelper {
       'meals',
       where: 'date = ?',
       whereArgs: [date],
-      orderBy: 'mealType ASC',
+      orderBy: 'time ASC, id ASC',
     );
   }
 
@@ -109,6 +109,11 @@ class DatabaseHelper {
   Future<int> deleteMeal(String id) async {
     final db = await database;
     return await db.delete('meals', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearAllMeals() async {
+    final db = await database;
+    await db.delete('meals');
   }
 
   Future<void> close() async {

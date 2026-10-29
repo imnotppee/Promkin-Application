@@ -360,7 +360,8 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: 7,
-                    separatorBuilder: (_, _) => const SizedBox(width: 6),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 6),
                     itemBuilder: (context, index) {
                       final date = DateTime.now().add(Duration(days: index));
                       final selected = DateUtils.isSameDay(date, _selectedDate);

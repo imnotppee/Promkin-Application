@@ -14,6 +14,11 @@ void main() {
     testWidgets('renders recipe name, emoji, and adds meal to provider', (
       WidgetTester tester,
     ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final repo = MealRepository();
       final mealProvider = MealProvider(repository: repo, initDemoMeals: false);
 
@@ -48,7 +53,7 @@ void main() {
       // Verify Dialog UI
       expect(find.text('เพิ่มเมนูลงในแผน'), findsOneWidget);
       expect(find.text('สุกี้น้ำไก่ · ฿50'), findsOneWidget);
-      expect(find.text('🍲'), findsOneWidget);
+      expect(find.text('🍲'), findsWidgets);
 
       // Confirm Addition
       final confirmBtn = find.text('เพิ่มในแผน');

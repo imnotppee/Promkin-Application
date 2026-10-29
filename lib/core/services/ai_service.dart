@@ -183,7 +183,10 @@ class AiService {
     for (final menu in allCatalog) {
       if (recommendations.length >= mealCount) break;
       if (menu.estimatedPrice > remainingBudget) continue;
-      if (disliked.any((ingredient) => menu.name.toLowerCase().contains(ingredient.toLowerCase()))) {
+      if (disliked.any(
+        (ingredient) =>
+            menu.name.toLowerCase().contains(ingredient.toLowerCase()),
+      )) {
         continue;
       }
       recommendations.add(menu);
