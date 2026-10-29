@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
+import 'package:promkin_app/core/services/firebase_service.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
-import 'package:promkin_app/features/auth/presentation/screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,15 +17,16 @@ class ProfileScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: user == null
-            ? Center(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  ),
-                  child: const Text('ไปที่หน้าเข้าสู่ระบบ'),
-                ),
-              )
+            ? auth.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Center(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst),
+                        child: const Text('กลับไปหน้าเข้าสู่ระบบ'),
+                      ),
+                    )
             : Column(
                 children: [
                   const CircleAvatar(
@@ -50,13 +51,47 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 32),
-                  const ListTile(
-                    leading: Icon(Icons.security),
-                    title: Text('สถานะการยืนยันตัวตน'),
-                    trailing: Text(
-                      'ออนไลน์ (Mock/Firebase)',
-                      style: TextStyle(color: AppColors.secondary),
+                  ListTile(
+                    leading: const Icon(Icons.verified_user_outlined),
+                    title: const Text('สถานะการยืนยันตัวตน'),
+                    subtitle: const Text('Firebase Authentication'),
+                    trailing: const Text(
+                      'ยืนยันแล้ว',
+                      style: TextStyle(color: AppColors.primary),
                     ),
+                  ),
+                  FutureBuilder<bool>(
+                    future: FirebaseService.instance.verifyFirestoreConnection(
+                      user.id,
+                    ),
+                    builder: (context, snapshot) {
+                      final connected = snapshot.data == true;
+                      return ListTile(
+                        leading: Icon(
+                          connected
+                              ? Icons.cloud_done_outlined
+                              : Icons.cloud_off_outlined,
+                        ),
+                        title: const Text('Cloud Firestore'),
+                        trailing:
+                            snapshot.connectionState == ConnectionState.waiting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                connected ? 'เชื่อมต่อแล้ว' : 'เชื่อมต่อไม่ได้',
+                                style: TextStyle(
+                                  color: connected
+                                      ? AppColors.primary
+                                      : AppColors.error,
+                                ),
+                              ),
+                      );
+                    },
                   ),
                   const Spacer(),
                   OutlinedButton.icon(
@@ -64,7 +99,26 @@ class ProfileScreen extends StatelessWidget {
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
                     ),
-                    onPressed: () => auth.logout(),
+                    onPressed: auth.isLoading
+                        ? null
+                        : () async {
+                            final loggedOut = await auth.logout();
+                            if (!context.mounted) return;
+                            if (loggedOut) {
+                              Navigator.of(
+                                context,
+                              ).popUntil((route) => route.isFirst);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    auth.errorMessage ??
+                                        'ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                     icon: const Icon(Icons.logout),
                     label: const Text('ออกจากระบบ'),
                   ),

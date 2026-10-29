@@ -49,14 +49,15 @@ class PromkinApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AiProvider()),
         ChangeNotifierProvider(create: (_) => NutritionProvider()),
       ],
-      child: Consumer<SettingsProvider>(
-        builder: (context, settings, _) {
+      child: Selector<SettingsProvider, bool>(
+        selector: (context, settings) => settings.isDarkMode,
+        builder: (context, isDarkMode, _) {
           return MaterialApp(
             title: 'Promkin - วางแผนมื้ออาหาร',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
             home: Consumer<AuthProvider>(
               builder: (context, auth, _) => auth.isAuthenticated
                   ? const MainNavigationScreen()

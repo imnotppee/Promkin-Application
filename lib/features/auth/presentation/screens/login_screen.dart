@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
+import 'package:promkin_app/features/auth/presentation/screens/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,20 +36,48 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: SafeArea(
-        child: FadeSlideIn(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: FadeSlideIn(
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-                  child: Center(
-                    child: Text(
-                      _register ? 'Create Account' : 'Sign In',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                      ),
+                  padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
+                  child: SizedBox(
+                    height: 48,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          tooltip: 'ย้อนกลับ',
+                          onPressed: () => Navigator.maybePop(context),
+                          icon: const Icon(Icons.arrow_back_rounded),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _register ? 'Create Account' : 'Sign In',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person_outline_rounded,
+                            color: AppColors.primary,
+                            size: 21,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -57,12 +86,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                 sliver: SliverList.list(
                   children: [
-                    const SizedBox(height: 13),
+                    const SizedBox(height: 8),
                     Center(
                       child: Image.asset(
                         'assets/images/promkin_logo.png',
-                        width: 154,
-                        height: 154,
+                        width: 132,
+                        height: 132,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(
@@ -142,16 +171,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           if (_register) ...[
                             _field(
-                              'ชื่อ - นามสกุล',
-                              'สมชาย ใจดี',
+                              'ชื่อผู้ใช้ (Username)',
+                              'เช่น Piyawit',
                               Icons.person_outline,
                               controller: _name,
                             ),
                             const SizedBox(height: 15),
                           ],
                           _field(
-                            'อีเมล หรือเบอร์โทรศัพท์',
-                            'name@example.com หรือ 08X-XXX-XXXX',
+                            'อีเมล',
+                            'name@example.com',
                             Icons.mail_outline,
                             controller: _email,
                           ),
@@ -178,10 +207,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (_register) ...[
                             const SizedBox(height: 5),
                             const Text(
-                              'อย่างน้อย 8 ตัวอักษร',
+                              'รหัสผ่านต้องมีอย่างน้อย 8 ตัว และประกอบด้วย A-Z, a-z, ตัวเลข และอักขระพิเศษ เช่น ! @ # \$ %',
                               style: TextStyle(
                                 color: AppColors.muted,
-                                fontSize: 10,
+                                fontSize: 11,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -207,6 +236,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                     'จดจำการเข้าสู่ระบบ',
                                     style: TextStyle(fontSize: 12),
                                   ),
+                                ),
+                                TextButton(
+                                  onPressed: auth.isLoading
+                                      ? null
+                                      : () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const ForgotPasswordScreen(),
+                                          ),
+                                        ),
+                                  child: const Text('ลืมรหัสผ่าน?'),
                                 ),
                               ],
                             ),
@@ -297,6 +338,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               label: const Text('ดำเนินการต่อด้วย Google'),
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: AppColors.dinnerBg,
+                                side: BorderSide.none,
+                                minimumSize: const Size.fromHeight(48),
+                              ),
                             ),
                           ),
                         ],
@@ -355,6 +401,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ],
+          ),
+            ),
           ),
         ),
       ),
@@ -429,13 +477,33 @@ class _LoginScreenState extends State<LoginScreen> {
       _message('กรอกอีเมลและรหัสผ่านก่อน');
       return;
     }
-    if (_register &&
-        (_name.text.trim().isEmpty ||
-            _password.text.length < 8 ||
-            _password.text != _confirm.text ||
-            !_acceptedTerms)) {
-      _message('ตรวจสอบชื่อและรหัสผ่านให้ถูกต้อง');
-      return;
+    if (_register) {
+      final password = _password.text;
+      final hasRequiredPasswordParts =
+          password.length >= 8 &&
+          RegExp(r'[A-Z]').hasMatch(password) &&
+          RegExp(r'[a-z]').hasMatch(password) &&
+          RegExp(r'[0-9]').hasMatch(password) &&
+          RegExp(r'[^A-Za-z0-9]').hasMatch(password);
+
+      if (_name.text.trim().isEmpty) {
+        _message('กรุณากรอกชื่อผู้ใช้');
+        return;
+      }
+      if (!hasRequiredPasswordParts) {
+        _message(
+          'รหัสผ่านต้องยาวอย่างน้อย 8 ตัว มี A-Z, a-z, ตัวเลข และอักขระพิเศษ',
+        );
+        return;
+      }
+      if (password != _confirm.text) {
+        _message('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
+        return;
+      }
+      if (!_acceptedTerms) {
+        _message('กรุณายอมรับข้อกำหนดการให้บริการก่อนสร้างบัญชี');
+        return;
+      }
     }
     final auth = context.read<AuthProvider>();
     final success = _register

@@ -78,34 +78,9 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
       setState(() => _recipes = recipes);
     } catch (_) {
       if (!mounted) return;
-      final q = _searchController.text.trim().toLowerCase();
-      final all = const [
-        RecipeModel(
-          id: 'demo_1',
-          emoji: '🍲',
-          name: 'สุกี้น้ำไก่',
-          category: 'อาหารไทย',
-          cookingMinutes: 15,
-          calories: 360,
-          estimatedPrice: 50.0,
-          description: 'สุกี้น้ำไก่ อุดมด้วยผักสดและโปรตีน',
-        ),
-        RecipeModel(
-          id: 'demo_2',
-          emoji: '🍳',
-          name: 'ข้าวกะเพราเต้าหู้ไข่',
-          category: 'มังสวิรัติ',
-          cookingMinutes: 20,
-          calories: 420,
-          estimatedPrice: 45.0,
-          description: 'กะเพราเต้าหู้ไข่รสแซ่บ',
-        ),
-      ];
       setState(() {
-        _recipes = q.isEmpty
-            ? all
-            : all.where((r) => r.name.toLowerCase().contains(q)).toList();
-        _error = null;
+        _recipes = [];
+        _error = 'เชื่อมต่อคลังเมนูไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง';
       });
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -257,25 +232,22 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   }
 
   Future<void> _addRecipeToPlan(RecipeModel recipe) async {
-    var details = recipe;
-    try {
-      details = await _recipeService.getDetails(recipe.id);
-    } catch (_) {
-      // The recipe list still contains enough information to schedule it.
-    }
-    if (!mounted) return;
+    // Open the scheduling form immediately. Fetching full recipe details here
+    // made the plus button appear unresponsive while the backend (and optional
+    // nutrition estimate) was loading. Users can still open the recipe card to
+    // view its full details before adding it.
     await AddToPlanDialog.show(
       context,
-      recipeName: details.name,
-      emoji: details.emoji,
-      imageUrl: details.imageUrl,
+      recipeName: recipe.name,
+      emoji: recipe.emoji,
+      imageUrl: recipe.imageUrl,
       source: 'themealdb',
-      sourceId: details.id,
-      price: details.estimatedPrice,
-      calories: details.calories > 0 ? details.calories : null,
-      protein: details.protein > 0 ? details.protein : null,
-      carbs: details.carbs > 0 ? details.carbs : null,
-      fat: details.fat > 0 ? details.fat : null,
+      sourceId: recipe.id,
+      price: recipe.estimatedPrice,
+      calories: recipe.calories > 0 ? recipe.calories : null,
+      protein: recipe.protein > 0 ? recipe.protein : null,
+      carbs: recipe.carbs > 0 ? recipe.carbs : null,
+      fat: recipe.fat > 0 ? recipe.fat : null,
       mealProvider: context.read<MealProvider>(),
     );
   }

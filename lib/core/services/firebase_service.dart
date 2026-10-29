@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
@@ -16,6 +17,26 @@ class FirebaseService {
   bool get isInitialized => _isInitialized;
 
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+
+  String? get _signedInUserId => FirebaseAuth.instance.currentUser?.uid;
+
+  Future<String> _getSignedInUserName(String userId) async {
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null || authUser.uid != userId) {
+      throw StateError('A matching signed-in user is required.');
+    }
+
+    final profile = await _firestore.collection('users').doc(userId).get();
+    final profileName = profile.data()?['name']?.toString().trim();
+    if (profileName != null && profileName.isNotEmpty) return profileName;
+
+    final displayName = authUser.displayName?.trim();
+    if (displayName != null && displayName.isNotEmpty) return displayName;
+
+    final email = authUser.email?.trim() ?? '';
+    final emailName = email.contains('@') ? email.split('@').first : email;
+    return emailName.isNotEmpty ? emailName : 'ผู้ใช้';
+  }
 
   /// Initialize Firebase.
   Future<void> initialize() async {
@@ -40,6 +61,23 @@ class FirebaseService {
       throw StateError(
         'Firebase is not initialized. Check Firebase configuration.',
       );
+    }
+  }
+
+  /// Verify that this signed-in account can reach the real Firestore server.
+  Future<bool> verifyFirestoreConnection(String userId) async {
+    try {
+      _checkInitialized();
+      if (_signedInUserId != userId) return false;
+
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .get(const GetOptions(source: Source.server));
+      return true;
+    } catch (error) {
+      debugPrint('Firestore server check failed: $error');
+      return false;
     }
   }
 
@@ -105,6 +143,10 @@ class FirebaseService {
     if (userId.trim().isEmpty) {
       throw ArgumentError('User ID must not be empty.');
     }
+    if (_signedInUserId != userId) {
+      throw StateError('Meal plan owner must match the signed-in user.');
+    }
+    final userName = await _getSignedInUserName(userId);
 
     final dateOnly = DateTime(planDate.year, planDate.month, planDate.day);
 
@@ -116,11 +158,18 @@ class FirebaseService {
         .get();
 
     if (existing.docs.isNotEmpty) {
-      return existing.docs.first.id;
+      final existingPlan = existing.docs.first;
+      // Backfill a display name for plans created before user_name was added.
+      await existingPlan.reference.set({
+        'user_id': userId,
+        'user_name': userName,
+      }, SetOptions(merge: true));
+      return existingPlan.id;
     }
 
     final doc = await _firestore.collection('meal_plans').add({
       'user_id': userId,
+      'user_name': userName,
       'plan_date': Timestamp.fromDate(dateOnly),
     });
 
@@ -144,15 +193,34 @@ class FirebaseService {
     }
 
     final mealPlanId = mealData['meal_plan_id'];
+    final userId = _signedInUserId;
 
     if (mealPlanId == null || mealPlanId.toString().trim().isEmpty) {
       throw ArgumentError('A valid meal_plan_id is required.');
     }
+    if (userId == null) {
+      throw StateError('A signed-in user is required to save a planned meal.');
+    }
+
+    final plan = await _firestore
+        .collection('meal_plans')
+        .doc(mealPlanId.toString())
+        .get();
+    if (!plan.exists || plan.data()?['user_id'] != userId) {
+      throw StateError('The meal plan does not belong to the signed-in user.');
+    }
+
+    final userName = await _getSignedInUserName(userId);
+    final dataWithOwner = <String, dynamic>{
+      ...mealData,
+      'user_id': userId,
+      'user_name': userName,
+    };
 
     await _firestore
         .collection('planned_meals')
         .doc(mealId)
-        .set(mealData, SetOptions(merge: true));
+        .set(dataWithOwner, SetOptions(merge: true));
 
     debugPrint('Planned meal synced to Cloud Firestore: $mealId');
     return true;
@@ -187,7 +255,13 @@ class FirebaseService {
   Future<List<Map<String, dynamic>>> getPlannedMealsFromCloud() async {
     _checkInitialized();
 
-    final snapshot = await _firestore.collection('planned_meals').get();
+    final userId = _signedInUserId;
+    if (userId == null) return [];
+
+    final snapshot = await _firestore
+        .collection('planned_meals')
+        .where('user_id', isEqualTo: userId)
+        .get();
 
     return snapshot.docs.map((doc) {
       return {'id': doc.id, ...doc.data()};

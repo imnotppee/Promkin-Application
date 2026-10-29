@@ -23,19 +23,31 @@ service cloud.firestore {
       allow get, list: if request.auth != null
         && resource.data.user_id == request.auth.uid;
       allow create: if request.auth != null
-        && request.resource.data.user_id == request.auth.uid;
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.user_name is string
+        && request.resource.data.user_name.size() > 0;
       allow update: if request.auth != null
         && resource.data.user_id == request.auth.uid
-        && request.resource.data.user_id == request.auth.uid;
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.user_name is string
+        && request.resource.data.user_name.size() > 0;
       allow delete: if request.auth != null
         && resource.data.user_id == request.auth.uid;
     }
 
     match /planned_meals/{mealId} {
       allow get, list, delete: if ownsMealPlan(resource.data.meal_plan_id);
-      allow create: if ownsMealPlan(request.resource.data.meal_plan_id);
+      allow create: if request.auth != null
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.user_name is string
+        && request.resource.data.user_name.size() > 0
+        && ownsMealPlan(request.resource.data.meal_plan_id);
       allow update: if ownsMealPlan(resource.data.meal_plan_id)
-        && request.resource.data.meal_plan_id == resource.data.meal_plan_id;
+        && request.resource.data.meal_plan_id == resource.data.meal_plan_id
+        && request.auth != null
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.user_name is string
+        && request.resource.data.user_name.size() > 0;
     }
   }
 }

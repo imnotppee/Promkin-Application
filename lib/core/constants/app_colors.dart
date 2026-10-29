@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// PROM KIN's warm, forest-green design tokens.
 class AppColors {
-  static const Color primary = Color(0xFF1E382B);
+  static const Color primary = Color(0xFF163B2A);
   static const Color onPrimary = Colors.white;
   static const Color primaryContainer = Color(0xFFE9F0E7);
   static const Color onPrimaryContainer = Color(0xFF324C3E);
 
-  static const Color secondary = Color(0xFF8DA390);
-  static const Color onSecondary = Color(0xFF102318);
-  static const Color secondaryContainer = Color(0xFFD2DDD0);
+  static const Color secondary = Color(0xFFA8BDA5);
+  static const Color onSecondary = Color(0xFF163B2A);
+  static const Color secondaryContainer = Color(0xFFE3ECE1);
   static const Color onSecondaryContainer = Color(0xFF384B3C);
 
   static const Color tertiary = Color(0xFFC58958);

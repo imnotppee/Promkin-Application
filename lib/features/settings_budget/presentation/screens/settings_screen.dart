@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/utils/currency_formatter.dart';
@@ -14,6 +15,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _showMealPreferences = false;
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
@@ -68,12 +71,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: TextStyle(color: AppColors.muted, fontSize: 13),
                     ),
                     const SizedBox(height: 12),
-                    _accountSettings(
-                      user?.name ?? 'พิมพ์ชนก',
-                      user?.email ?? 'โปรไฟล์ PROM KIN',
-                    ),
+                    _settingsTabs(),
                     const SizedBox(height: 16),
-                    _mealSettings(settings),
+                    if (_showMealPreferences)
+                      _mealSettings(settings)
+                    else
+                      _accountSettings(
+                        user?.name ?? 'ผู้ใช้ PromKin',
+                        user?.email ?? 'โปรไฟล์ PROM KIN',
+                      ),
                     const SizedBox(height: 22),
                     Center(
                       child: Text(
@@ -88,13 +94,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Center(
-                      child: Text(
-                        'การตั้งค่าจะบันทึกอัตโนมัติ',
-                        style: TextStyle(color: AppColors.muted, fontSize: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            const SnackBar(
+                              content: Text('บันทึกการตั้งค่าแล้ว'),
+                            ),
+                          ),
+                        icon: const Icon(Icons.check_circle_outline_rounded),
+                        label: const Text('บันทึกการตั้งค่า'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52),
+                        ),
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _settingsTabs() => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF2EFEB),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      children: [
+        _settingsTab('แอป & บัญชี', Icons.tune_rounded, false),
+        _settingsTab('แผนอาหาร', Icons.restaurant_menu_rounded, true),
+      ],
+    ),
+  );
+
+  Widget _settingsTab(String label, IconData icon, bool mealPreferences) {
+    final selected = _showMealPreferences == mealPreferences;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => setState(() => _showMealPreferences = mealPreferences),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 170),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: selected ? Colors.white : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: AppColors.primary),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                    color: selected ? AppColors.primary : AppColors.muted,
+                  ),
                 ),
               ),
             ],
@@ -257,6 +324,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'งบประมาณรายวัน (บาท)',
               settings.dailyBudget.toStringAsFixed(0),
               (v) => settings.updateBudget(double.parse(v)),
+              suffix: 'บาท / วัน',
+              allowDecimal: true,
             ),
           ),
           _actionTile(
@@ -267,6 +336,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'งบประมาณรายเดือน (บาท)',
               settings.monthlyBudget.toStringAsFixed(0),
               (v) => settings.updateMonthlyBudget(double.parse(v)),
+              suffix: 'บาท / เดือน',
+              allowDecimal: true,
             ),
           ),
           _actionTile(
@@ -277,6 +348,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'เป้าหมายแคลอรี (kcal)',
               settings.dailyCalories.toString(),
               (v) => settings.updateCalories(int.parse(v)),
+              suffix: 'kcal / วัน',
             ),
           ),
           ListTile(
@@ -349,34 +421,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _editNumber(
     String title,
     String initial,
-    Future<void> Function(String) save,
-  ) async {
+    Future<void> Function(String) save, {
+    required String suffix,
+    bool allowDecimal = false,
+  }) async {
     final controller = TextEditingController(text: initial);
+    String? validationError;
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(suffixText: 'บาท / วัน'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('ยกเลิก'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final value = controller.text.trim();
-              if (value.isNotEmpty && double.tryParse(value) != null) {
-                await save(value);
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.numberWithOptions(
+              decimal: allowDecimal,
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(
+                allowDecimal ? RegExp(r'[0-9.]') : RegExp(r'[0-9]'),
+              ),
+            ],
+            decoration: InputDecoration(
+              suffixText: suffix,
+              errorText: validationError,
+            ),
+            onChanged: (_) {
+              if (validationError != null) {
+                setDialogState(() => validationError = null);
               }
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
-            child: const Text('บันทึก'),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('ยกเลิก'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final value = controller.text.trim();
+                final parsed = allowDecimal
+                    ? double.tryParse(value)
+                    : int.tryParse(value)?.toDouble();
+                if (parsed == null || !parsed.isFinite || parsed <= 0) {
+                  setDialogState(
+                    () => validationError = allowDecimal
+                        ? 'กรอกตัวเลขที่มากกว่า 0'
+                        : 'กรอกจำนวนเต็มที่มากกว่า 0',
+                  );
+                  return;
+                }
+
+                try {
+                  await save(value);
+                  if (dialogContext.mounted) Navigator.pop(dialogContext);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context)
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(
+                        const SnackBar(content: Text('บันทึกค่าเรียบร้อย')),
+                      );
+                  }
+                } catch (error) {
+                  setDialogState(
+                    () => validationError = 'บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง',
+                  );
+                }
+              },
+              child: const Text('บันทึก'),
+            ),
+          ],
+        ),
       ),
     );
     controller.dispose();

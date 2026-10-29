@@ -1,7 +1,7 @@
 class AppConstants {
   // Database
   static const String databaseName = 'promkin.db';
-  static const int databaseVersion = 4;
+  static const int databaseVersion = 5;
 
   // Defaults
   static const double defaultDailyBudget = 300.0; // 300 THB/day

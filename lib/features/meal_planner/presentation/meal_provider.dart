@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_repository.dart';
@@ -9,24 +12,68 @@ class MealProvider extends ChangeNotifier {
   List<MealModel> _meals = [];
   List<MealModel> _allMeals = [];
   bool _isLoading = false;
+  StreamSubscription<User?>? _authSubscription;
+  String? _loadedUserId;
+  int _loadGeneration = 0;
 
   DateTime get selectedDate => _selectedDate;
   List<MealModel> get meals => _meals;
   List<MealModel> get allMeals => _allMeals;
   bool get isLoading => _isLoading;
 
-  MealProvider({MealRepository? repository, bool initDemoMeals = true})
+  MealProvider({MealRepository? repository, bool initDemoMeals = false})
     : _repository = repository ?? MealRepository() {
+    _loadedUserId = _activeUserId;
     if (initDemoMeals) {
       _initDefaultMeals();
     }
     loadAllMeals();
     loadMealsForDate(_selectedDate);
+    _listenForAccountChanges();
   }
 
   Future<void> loadAllMeals() async {
-    _allMeals = await _repository.getAllMeals();
+    final userId = _activeUserId;
+    final generation = _loadGeneration;
+    final meals = await _repository.getAllMeals();
+    if (generation != _loadGeneration || userId != _activeUserId) return;
+    _allMeals = meals;
     notifyListeners();
+  }
+
+  String? get _activeUserId {
+    try {
+      return FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _listenForAccountChanges() {
+    try {
+      _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
+        user,
+      ) {
+        final nextUserId = user?.uid;
+        if (nextUserId == _loadedUserId) return;
+
+        _loadedUserId = nextUserId;
+        _loadGeneration++;
+        _meals = [];
+        _allMeals = [];
+        notifyListeners();
+        loadAllMeals();
+        loadMealsForDate(_selectedDate);
+      });
+    } catch (_) {
+      // Firebase can be unavailable in local-only and widget-test contexts.
+    }
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   void _initDefaultMeals() {
@@ -250,11 +297,15 @@ class MealProvider extends ChangeNotifier {
   }
 
   Future<void> loadMealsForDate(DateTime date) async {
+    final userId = _activeUserId;
+    final generation = _loadGeneration;
     _isLoading = true;
     notifyListeners();
 
     final isoDate = DateFormatter.toIso(date);
-    _meals = await _repository.getMealsByDate(isoDate);
+    final meals = await _repository.getMealsByDate(isoDate);
+    if (generation != _loadGeneration || userId != _activeUserId) return;
+    _meals = meals;
 
     _isLoading = false;
     notifyListeners();

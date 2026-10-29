@@ -13,6 +13,7 @@ class AuthProvider extends ChangeNotifier {
 
   FirebaseAuth? _auth;
   StreamSubscription<User?>? _authSubscription;
+  int _authStateRevision = 0;
 
   UserModel? _currentUser;
   bool _isLoading = false;
@@ -46,22 +47,40 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> _handleAuthStateChanged(User? firebaseUser) async {
+    final revision = ++_authStateRevision;
     if (firebaseUser == null) {
+      // The stream's initial signed-out event can be delivered after an
+      // interactive sign-in has already completed. Trust Firebase's live
+      // session in that case instead of clearing the newly signed-in user.
+      final activeUser = _auth?.currentUser;
+      if (activeUser != null) {
+        _currentUser = _createUserModel(activeUser);
+        notifyListeners();
+        return;
+      }
       _currentUser = null;
       notifyListeners();
       return;
     }
 
-    try {
-      await _loadUserProfile(firebaseUser);
-    } catch (e) {
-      debugPrint('Load user profile failed: $e');
+    // Update the app gate from Firebase Auth immediately. Profile lookup may
+    // fail or finish after sign-out, so it must never control authentication.
+    _currentUser = _createUserModel(firebaseUser);
+    notifyListeners();
 
-      // หากอ่านโปรไฟล์จาก Firestore ไม่ได้
-      // ยังใช้ข้อมูลพื้นฐานจาก Firebase Authentication ได้
-      _currentUser = _createUserModel(firebaseUser);
-      notifyListeners();
+    Map<String, dynamic>? profile;
+    try {
+      profile = await FirebaseService.instance.getUserProfile(firebaseUser.uid);
+    } catch (e) {
+      debugPrint('Could not load user profile: $e');
     }
+
+    if (revision != _authStateRevision ||
+        _auth?.currentUser?.uid != firebaseUser.uid) {
+      return;
+    }
+    _currentUser = _createUserModel(firebaseUser, profile: profile);
+    notifyListeners();
   }
 
   UserModel _createUserModel(
@@ -88,20 +107,6 @@ class AuthProvider extends ChangeNotifier {
       email: email,
       avatarUrl: avatarUrl,
     );
-  }
-
-  Future<void> _loadUserProfile(User firebaseUser) async {
-    Map<String, dynamic>? profile;
-
-    try {
-      profile = await FirebaseService.instance.getUserProfile(firebaseUser.uid);
-    } catch (e) {
-      debugPrint('Could not read Firestore profile: $e');
-    }
-
-    _currentUser = _createUserModel(firebaseUser, profile: profile);
-
-    notifyListeners();
   }
 
   Future<bool> login(String email, String password) async {
@@ -137,6 +142,11 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = 'ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง';
         return false;
       }
+
+      // Switch to the authenticated app as soon as Firebase accepts the
+      // credentials. Profile and Firestore work must not block navigation.
+      _currentUser = _createUserModel(firebaseUser);
+      notifyListeners();
 
       // อ่านข้อมูลโปรไฟล์เดิม และใช้ Firebase UID เป็นรหัสผู้ใช้
       Map<String, dynamic>? profile;
@@ -175,7 +185,8 @@ class AuthProvider extends ChangeNotifier {
         case 'user-not-found':
         case 'wrong-password':
         case 'invalid-credential':
-          _errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+          _errorMessage =
+              'อีเมลหรือรหัสผ่านไม่ถูกต้อง หากลืมรหัสให้กด “ลืมรหัสผ่าน?”';
           break;
         case 'user-disabled':
           _errorMessage = 'บัญชีนี้ถูกระงับการใช้งาน';
@@ -197,6 +208,43 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Login failed: $e');
       _errorMessage = 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> resetPassword(String email) async {
+    _errorMessage = null;
+    final normalizedEmail = email.trim();
+    if (normalizedEmail.isEmpty) {
+      _errorMessage = 'กรอกอีเมลที่ใช้สมัครก่อนรีเซ็ตรหัสผ่าน';
+      notifyListeners();
+      return false;
+    }
+    if (_auth == null) {
+      _errorMessage = 'เชื่อมต่อ Firebase ไม่ได้ กรุณาตรวจสอบการตั้งค่า';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _auth!.sendPasswordResetEmail(email: normalizedEmail);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = switch (e.code) {
+        'invalid-email' => 'รูปแบบอีเมลไม่ถูกต้อง',
+        'network-request-failed' => 'เชื่อมต่ออินเทอร์เน็ตไม่ได้',
+        'too-many-requests' => 'ส่งคำขอหลายครั้งเกินไป กรุณารอสักครู่',
+        _ => 'ส่งลิงก์รีเซ็ตรหัสผ่านไม่สำเร็จ กรุณาลองอีกครั้ง',
+      };
+      return false;
+    } catch (e) {
+      debugPrint('Password reset failed: $e');
+      _errorMessage = 'ส่งลิงก์รีเซ็ตรหัสผ่านไม่สำเร็จ กรุณาลองอีกครั้ง';
       return false;
     } finally {
       _isLoading = false;
@@ -239,6 +287,11 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ';
         return false;
       }
+
+      // Firebase has a persisted session now. Enter the app immediately and
+      // enrich the user profile asynchronously below.
+      _currentUser = _createUserModel(firebaseUser);
+      notifyListeners();
 
       Map<String, dynamic>? profile;
       try {
@@ -332,6 +385,9 @@ class AuthProvider extends ChangeNotifier {
         profile: {'name': normalizedName},
       );
       _currentUser = user;
+      // Firebase signs the user in during account creation. Switch to the app
+      // immediately; profile sync should not make the user sign in again.
+      notifyListeners();
 
       // Account creation succeeds even if profile sync is temporarily offline.
       try {
@@ -345,6 +401,32 @@ class AuthProvider extends ChangeNotifier {
 
       return true;
     } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        try {
+          final existingCredential = await _auth!.signInWithEmailAndPassword(
+            email: normalizedEmail,
+            password: password,
+          );
+          final existingUser = existingCredential.user;
+          if (existingUser == null) {
+            _errorMessage = 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง';
+            return false;
+          }
+
+          _currentUser = _createUserModel(existingUser);
+          notifyListeners();
+          return true;
+        } on FirebaseAuthException catch (signInError) {
+          _errorMessage = switch (signInError.code) {
+            'invalid-credential' || 'wrong-password' || 'user-not-found' =>
+              'อีเมลนี้มีบัญชีแล้ว แต่รหัสผ่านไม่ตรง ลองเข้าสู่ระบบหรือกด “ลืมรหัสผ่าน?”',
+            'network-request-failed' => 'เชื่อมต่ออินเทอร์เน็ตไม่ได้',
+            _ => 'อีเมลนี้มีบัญชีแล้ว ลองเข้าสู่ระบบหรือกด “ลืมรหัสผ่าน?”',
+          };
+          return false;
+        }
+      }
+
       _errorMessage = switch (e.code) {
         'email-already-in-use' => 'อีเมลนี้มีบัญชีอยู่แล้ว',
         'invalid-email' => 'รูปแบบอีเมลไม่ถูกต้อง',
@@ -364,26 +446,46 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> logout() async {
+  Future<bool> logout() async {
     _errorMessage = null;
+    ++_authStateRevision;
 
     if (_auth == null) {
       _currentUser = null;
       notifyListeners();
-      return;
+      return true;
     }
 
+    _isLoading = true;
+    _currentUser = null;
+    notifyListeners();
     try {
       await _auth!.signOut();
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (e) {
+        debugPrint('Google sign-out cleanup failed: $e');
+      }
       _currentUser = null;
-      notifyListeners();
+      return true;
     } on FirebaseAuthException catch (e) {
       debugPrint('Firebase logout error: ${e.code}');
+      final remainingUser = _auth!.currentUser;
+      _currentUser = remainingUser == null
+          ? null
+          : _createUserModel(remainingUser);
       _errorMessage = 'ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง';
-      notifyListeners();
+      return false;
     } catch (e) {
       debugPrint('Logout failed: $e');
+      final remainingUser = _auth!.currentUser;
+      _currentUser = remainingUser == null
+          ? null
+          : _createUserModel(remainingUser);
       _errorMessage = 'เกิดข้อผิดพลาดขณะออกจากระบบ';
+      return false;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

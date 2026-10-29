@@ -8,7 +8,7 @@ import 'package:promkin_app/features/auth/presentation/screens/profile_screen.da
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
-import 'package:promkin_app/features/meal_planner/presentation/screens/add_meal_screen.dart';
+import 'package:promkin_app/features/recipe_search/presentation/screens/recipe_search_screen.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -199,13 +199,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       OutlinedButton.icon(
                         onPressed: () {
                           mealProvider.setSelectedDate(_selectedDate);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  AddMealScreen(date: _selectedDate),
-                            ),
-                          );
+                          final navigateToTab = widget.onNavigateToTab;
+                          if (navigateToTab != null) {
+                            navigateToTab(3);
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RecipeSearchScreen(),
+                              ),
+                            );
+                          }
                         },
                         icon: const Icon(Icons.add),
                         label: const Text('เพิ่มมื้ออาหารในวันนี้'),

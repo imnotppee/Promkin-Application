@@ -71,6 +71,7 @@ flutter:
 
   assets:
     - assets/images/promkin_logo.png
+    - assets/images/promkin_mark.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
