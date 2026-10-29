@@ -20,7 +20,9 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<MealProvider>.value(
         value: mealProvider,
-        child: MaterialApp(home: AddMealScreen(date: DateTime(2026, 10, 28))),
+        child: MaterialApp(
+          home: AddMealScreen(date: mealProvider.selectedDate),
+        ),
       ),
     );
 

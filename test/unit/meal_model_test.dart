@@ -51,5 +51,42 @@ void main() {
       expect(updated.price, 150.0);
       expect(updated.isCompleted, isTrue);
     });
+
+    test('toFirestoreMap should correctly map fields and meal types', () {
+      final types = [
+        'มื้อเช้า',
+        'มื้อกลางวัน',
+        'มื้อเย็น',
+        'ของว่าง',
+        'custom',
+      ];
+      final expectedTypes = ['breakfast', 'lunch', 'dinner', 'snack', 'custom'];
+
+      for (int i = 0; i < types.length; i++) {
+        final meal = MealModel(
+          id: 'meal_$i',
+          name: 'เมนู $i',
+          mealType: types[i],
+          price: 50.0,
+          calories: 400,
+          date: '2026-10-29',
+          time: '08:30',
+        );
+
+        final firestoreMap = meal.toFirestoreMap(
+          mealPlanId: 'plan_123',
+          source: 'manual',
+          sourceId: 'src_456',
+        );
+
+        expect(firestoreMap['meal_plan_id'], 'plan_123');
+        expect(firestoreMap['source'], 'manual');
+        expect(firestoreMap['source_id'], 'src_456');
+        expect(firestoreMap['recipe_name'], 'เมนู $i');
+        expect(firestoreMap['meal_type'], expectedTypes[i]);
+        expect(firestoreMap['estimated_cost'], 50.0);
+        expect(firestoreMap['calories'], 400);
+      }
+    });
   });
 }

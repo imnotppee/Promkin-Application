@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -50,9 +49,7 @@ class FirebaseService {
   // ------------------------------------------------------------
 
   /// Save or update a meal in the legacy "meals" collection.
-  Future<bool> syncMealToCloud(
-    Map<String, dynamic> mealData,
-  ) async {
+  Future<bool> syncMealToCloud(Map<String, dynamic> mealData) async {
     _checkInitialized();
 
     final id = mealData['id'];
@@ -90,10 +87,7 @@ class FirebaseService {
     final snapshot = await _firestore.collection('meals').get();
 
     return snapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        ...doc.data(),
-      };
+      return {'id': doc.id, ...doc.data()};
     }).toList();
   }
 
@@ -112,11 +106,7 @@ class FirebaseService {
       throw ArgumentError('User ID must not be empty.');
     }
 
-    final dateOnly = DateTime(
-      planDate.year,
-      planDate.month,
-      planDate.day,
-    );
+    final dateOnly = DateTime(planDate.year, planDate.month, planDate.day);
 
     final existing = await _firestore
         .collection('meal_plans')
@@ -169,22 +159,19 @@ class FirebaseService {
   }
 
   /// Read a planned meal by document ID.
-  Future<Map<String, dynamic>?> getPlannedMealFromCloud(
-    String mealId,
-  ) async {
+  Future<Map<String, dynamic>?> getPlannedMealFromCloud(String mealId) async {
     _checkInitialized();
 
-    final snapshot =
-        await _firestore.collection('planned_meals').doc(mealId).get();
+    final snapshot = await _firestore
+        .collection('planned_meals')
+        .doc(mealId)
+        .get();
 
     if (!snapshot.exists) {
       return null;
     }
 
-    return {
-      'id': snapshot.id,
-      ...snapshot.data()!,
-    };
+    return {'id': snapshot.id, ...snapshot.data()!};
   }
 
   /// Read all planned meals.
@@ -194,10 +181,7 @@ class FirebaseService {
     final snapshot = await _firestore.collection('planned_meals').get();
 
     return snapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        ...doc.data(),
-      };
+      return {'id': doc.id, ...doc.data()};
     }).toList();
   }
 
@@ -210,7 +194,9 @@ class FirebaseService {
     String userId,
     Map<String, dynamic> profile,
   ) async {
-    _checkInitialized();
+    if (!_isInitialized) {
+      return profile;
+    }
 
     await _firestore
         .collection('users')
