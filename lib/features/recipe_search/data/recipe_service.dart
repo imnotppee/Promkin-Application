@@ -46,7 +46,7 @@ class RecipeService {
   Future<RecipeModel> getDetails(String id) async {
     final response = await _client
         .get(Uri.parse('${ApiEndpoints.recipes}/$id'))
-        .timeout(const Duration(seconds: 20));
+        .timeout(const Duration(seconds: 55));
     if (response.statusCode != 200) {
       throw Exception('Could not load recipe details');
     }
