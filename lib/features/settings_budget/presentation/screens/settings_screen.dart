@@ -4,12 +4,15 @@ import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/utils/currency_formatter.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
+import 'package:promkin_app/core/services/notification_service.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final VoidCallback? onBack;
+
+  const SettingsScreen({super.key, this.onBack});
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -22,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settings = context.watch<SettingsProvider>();
     final user = context.watch<AuthProvider>().currentUser;
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FadeSlideIn(
           child: CustomScrollView(
@@ -33,7 +36,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Row(
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.maybePop(context),
+                        tooltip: 'ย้อนกลับ',
+                        onPressed: widget.onBack ??
+                            () => Navigator.maybePop(context),
                         icon: const Icon(Icons.arrow_back),
                       ),
                       const Expanded(
@@ -174,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _accountSettings(String name, String subtitle) => Container(
     padding: const EdgeInsets.all(19),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(21),
       boxShadow: [
         BoxShadow(
@@ -267,9 +272,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 7),
         Consumer<SettingsProvider>(
           builder: (context, settings, _) => _settingField(
-            settings.isDarkMode ? 'โหมดมืด (Dark)' : 'โหมดสว่าง (Light)',
+            _themeModeLabel(settings.themeMode),
             Icons.expand_more,
-            onTap: () => settings.toggleDarkMode(!settings.isDarkMode),
+            onTap: () => _chooseThemeMode(settings),
           ),
         ),
       ],
@@ -283,7 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
           decoration: BoxDecoration(
-            color: const Color(0xFFF4F2EE),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(15),
           ),
           child: Row(
@@ -303,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _mealSettings(SettingsProvider settings) => Container(
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(21),
     ),
     child: Material(
@@ -397,7 +402,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             contentPadding: EdgeInsets.zero,
             title: const Text('แจ้งเตือนมื้ออาหาร'),
             value: settings.isMealReminderEnabled,
-            onChanged: settings.toggleReminder,
+            onChanged: (value) async {
+              final enabled = await settings.toggleReminder(value);
+              if (!enabled && mounted) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'กรุณาอนุญาตการแจ้งเตือนในการตั้งค่าอุปกรณ์',
+                      ),
+                    ),
+                  );
+              } else if (value && mounted &&
+                  !await NotificationService.instance
+                      .canScheduleExactReminders()) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'ยังไม่ได้อนุญาต “ตั้งปลุกและการเตือนความจำ” '
+                        'การแจ้งเตือนอาจคลาดเคลื่อน',
+                      ),
+                    ),
+                  );
+              }
+            },
           ),
         ],
       ),
@@ -427,7 +458,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) async {
     final controller = TextEditingController(text: initial);
     String? validationError;
-    await showDialog<void>(
+    final valueToSave = await showDialog<String>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
@@ -471,22 +502,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                   return;
                 }
-
-                try {
-                  await save(value);
-                  if (dialogContext.mounted) Navigator.pop(dialogContext);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(
-                        const SnackBar(content: Text('บันทึกค่าเรียบร้อย')),
-                      );
-                  }
-                } catch (error) {
-                  setDialogState(
-                    () => validationError = 'บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง',
-                  );
-                }
+                Navigator.pop(dialogContext, value);
               },
               child: const Text('บันทึก'),
             ),
@@ -495,6 +511,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     controller.dispose();
+
+    // Persist after the dialog route has fully closed. Updating SettingsProvider
+    // while the dialog is still in the Navigator overlay can deactivate an
+    // inherited element while the dialog's dependents are being torn down.
+    if (valueToSave == null || !mounted) return;
+    try {
+      await save(valueToSave);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('บันทึกค่าเรียบร้อย')));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง')),
+        );
+    }
+  }
+
+  String _themeModeLabel(ThemeMode mode) => switch (mode) {
+    ThemeMode.light => 'โหมดสว่าง (Light)',
+    ThemeMode.dark => 'โหมดมืด (Dark)',
+    _ => 'ตามอุปกรณ์ (System default)',
+  };
+
+  Future<void> _chooseThemeMode(SettingsProvider settings) async {
+    final selected = await showDialog<ThemeMode>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('รูปแบบการแสดงผล'),
+        children: [
+          for (final mode in ThemeMode.values)
+            ListTile(
+              leading: Icon(
+                settings.themeMode == mode
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_off,
+                color: settings.themeMode == mode
+                    ? Theme.of(dialogContext).colorScheme.primary
+                    : null,
+              ),
+              title: Text(_themeModeLabel(mode)),
+              onTap: () => Navigator.pop(dialogContext, mode),
+            ),
+        ],
+      ),
+    );
+    if (selected != null) await settings.setThemeMode(selected);
   }
 
   Future<void> _addIngredient(SettingsProvider settings) async {

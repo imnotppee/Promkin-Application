@@ -32,89 +32,92 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: FadeSlideIn(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.maybePop(context),
-                      icon: const Icon(Icons.arrow_back),
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.maybePop(context),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Forgot Password',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
                     ),
-                    const Expanded(
-                      child: Text(
-                    'Forgot Password',
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+                  sliver: SliverList.list(
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 76,
+                          height: 76,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.lock_reset_rounded,
+                            color: AppColors.primary,
+                            size: 36,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const Text(
+                        'ลืมรหัสผ่าน?',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 24,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
+                      const SizedBox(height: 8),
+                      const Text(
+                        'กรอกอีเมลที่ใช้สมัคร เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้คุณ',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchInCurve: Curves.easeOutCubic,
+                        child: _submitted ? _successCard() : _formCard(),
+                      ),
+                      const SizedBox(height: 23),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () => Navigator.maybePop(context),
+                          icon: const Icon(Icons.arrow_back, size: 16),
+                          label: const Text('กลับไปเข้าสู่ระบบ'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
-              sliver: SliverList.list(
-                children: [
-                  Center(
-                    child: Container(
-                      width: 76,
-                      height: 76,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.lock_reset_rounded,
-                        color: AppColors.primary,
-                        size: 36,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'ลืมรหัสผ่าน?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'กรอกอีเมลที่ใช้สมัคร เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้คุณ',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.muted,
-                      fontSize: 13,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    child: _submitted ? _successCard() : _formCard(),
-                  ),
-                  const SizedBox(height: 23),
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: () => Navigator.maybePop(context),
-                      icon: const Icon(Icons.arrow_back, size: 16),
-                      label: const Text('กลับไปเข้าสู่ระบบ'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
           ),
         ),
       ),
@@ -152,9 +155,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               hintText: 'name@example.com',
               prefixIcon: Icon(Icons.mail_outline),
             ),
-            validator: (value) => value == null || value.trim().isEmpty
-                ? 'กรอกอีเมลก่อน'
-                : null,
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'กรอกอีเมลก่อน' : null,
           ),
           if (_errorMessage != null) ...[
             const SizedBox(height: 8),

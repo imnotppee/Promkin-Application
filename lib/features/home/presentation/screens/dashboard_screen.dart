@@ -6,8 +6,10 @@ import 'package:promkin_app/core/widgets/promkin_header.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
 import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
+import 'package:promkin_app/features/ai_recommendation/presentation/ai_provider.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
+import 'package:promkin_app/features/meal_planner/presentation/widgets/add_to_plan_dialog.dart';
 import 'package:promkin_app/features/recipe_search/presentation/screens/recipe_search_screen.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 
@@ -35,6 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final allMeals = context.watch<MealProvider>().allMeals;
     final mealProvider = context.read<MealProvider>();
+    final ai = context.watch<AiProvider>();
     final settings = context.watch<SettingsProvider>();
     final user = context.watch<AuthProvider>().currentUser;
     final userName = user?.name.trim().isNotEmpty == true
@@ -65,7 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         : (monthSpent / settings.monthlyBudget).clamp(0.0, 1.0);
 
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => mealProvider.loadMealsForDate(_selectedDate),
@@ -115,6 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 20),
                       _budgetCard(
+                        context,
                         monthSpent,
                         settings.monthlyBudget,
                         budgetProgress,
@@ -124,6 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         children: [
                           Expanded(
                             child: _metricCard(
+                              context,
                               Icons.checklist_rounded,
                               'มื้อที่วางแผนแล้ว',
                               '${weekMeals.length} / ${settings.mealsPerDay * 7} มื้อ',
@@ -134,6 +139,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _metricCard(
+                              context,
                               Icons.savings_outlined,
                               'ค่าเฉลี่ยต่อมื้อ',
                               '฿${monthMeals.isEmpty ? 0 : (monthSpent / monthMeals.length).round()}',
@@ -192,7 +198,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       const SizedBox(height: 12),
                       if (dayMeals.isEmpty)
-                        _emptyMeals()
+                        _emptyMeals(context)
                       else
                         ...dayMeals.map(_mealCard),
                       const SizedBox(height: 12),
@@ -215,11 +221,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         label: const Text('เพิ่มมื้ออาหารในวันนี้'),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size.fromHeight(48),
-                          backgroundColor: Colors.white,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.surface,
                         ),
                       ),
                       const SizedBox(height: 18),
-                      _aiBanner(),
+                      _aiRecommendationCard(ai, mealProvider, settings),
                     ],
                   ),
                 ),
@@ -231,10 +239,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _budgetCard(double spent, double budget, double progress) => Container(
+  Widget _budgetCard(
+    BuildContext context,
+    double spent,
+    double budget,
+    double progress,
+  ) => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(22),
       boxShadow: [
         BoxShadow(
@@ -309,6 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   );
 
   Widget _metricCard(
+    BuildContext context,
     IconData icon,
     String title,
     String value,
@@ -317,7 +331,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(
@@ -365,7 +379,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -422,7 +436,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         height: 58,
                         decoration: BoxDecoration(
                           color: selected
-                              ? const Color(0xFFA8BDA5)
+                              ? AppColors.secondary
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -506,7 +520,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       margin: const EdgeInsets.only(bottom: 11),
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(21),
         boxShadow: [
           BoxShadow(
@@ -638,11 +652,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     child: Text(meal.emoji, style: const TextStyle(fontSize: 27)),
   );
 
-  Widget _emptyMeals() => Container(
+  Widget _emptyMeals(BuildContext context) => Container(
     width: double.infinity,
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(20),
     ),
     child: const Column(
@@ -661,35 +675,120 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ),
   );
 
-  Widget _aiBanner() => Container(
-    padding: const EdgeInsets.all(18),
-    decoration: BoxDecoration(
-      color: const Color(0xFFE9F0E7),
-      borderRadius: BorderRadius.circular(22),
-    ),
-    child: const Row(
-      children: [
-        Icon(Icons.auto_awesome, color: AppColors.tertiary),
-        SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _aiRecommendationCard(
+    AiProvider ai,
+    MealProvider mealProvider,
+    SettingsProvider settings,
+  ) {
+    final menu = ai.dashboardPick;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE9F0E7),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                'AI แนะนำเมนู',
-                style: TextStyle(fontWeight: FontWeight.w800),
+              const Icon(Icons.auto_awesome, color: AppColors.tertiary),
+              const SizedBox(width: 9),
+              const Expanded(
+                child: Text(
+                  'AI แนะนำเมนูวันนี้',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
-              SizedBox(height: 3),
-              Text(
-                'อร่อยครบ จบในงบของคุณ',
-                style: TextStyle(color: AppColors.muted, fontSize: 12),
+              IconButton(
+                tooltip: 'สุ่มเมนูใหม่',
+                visualDensity: VisualDensity.compact,
+                onPressed: ai.isDashboardPickLoading
+                    ? null
+                    : () => ai.fetchDashboardPick(
+                        budget: settings.dailyBudget,
+                        targetCalories: settings.dailyCalories,
+                        mealCount: settings.mealsPerDay,
+                        dislikedIngredients: settings.dislikedIngredients,
+                        cuisines: settings.favoriteCuisines,
+                      ),
+                icon: const Icon(Icons.refresh_rounded),
               ),
             ],
           ),
-        ),
-      ],
-    ),
-  );
+          if (ai.isDashboardPickLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('กำลังเลือกเมนูให้เหมาะกับงบของคุณ…')),
+                ],
+              ),
+            )
+          else if (menu != null) ...[
+            Text(
+              menu.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              '${menu.mealType} · ${menu.calories} kcal · ฿${menu.estimatedPrice.toStringAsFixed(0)}',
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              menu.reason,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.tonalIcon(
+                onPressed: () => AddToPlanDialog.show(
+                  context,
+                  recipeName: menu.name,
+                  emoji: menu.mealType == 'มื้อเช้า'
+                      ? '🍳'
+                      : menu.mealType == 'มื้อเย็น'
+                      ? '🍛'
+                      : '🍜',
+                  price: menu.estimatedPrice,
+                  calories: menu.calories,
+                  protein: menu.protein,
+                  carbs: menu.carbs,
+                  fat: menu.fat,
+                  mealProvider: mealProvider,
+                ),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('เพิ่มในแผนมื้ออาหาร'),
+              ),
+            ),
+          ] else
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                ai.dashboardPickError ?? 'กำลังเตรียมเมนูแนะนำ…',
+                style: const TextStyle(color: AppColors.muted, fontSize: 12),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
   Widget _iconTile(IconData icon, Color background, Color foreground) =>
       Container(

@@ -14,6 +14,7 @@ class AppConstants {
   static const String keyDailyCalories = 'pref_daily_calories';
   static const String keyMealsPerDay = 'pref_meals_per_day';
   static const String keyDarkMode = 'pref_dark_mode';
+  static const String keyThemeMode = 'pref_theme_mode';
   static const String keyMealReminder = 'pref_meal_reminder';
   static const String keyDietaryPreferences = 'pref_dietary_preferences';
   static const String keyDislikedIngredients = 'pref_disliked_ingredients';

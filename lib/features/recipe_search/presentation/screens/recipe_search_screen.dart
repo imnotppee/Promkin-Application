@@ -328,7 +328,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FadeSlideIn(
           child: Column(

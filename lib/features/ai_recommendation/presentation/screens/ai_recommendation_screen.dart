@@ -65,7 +65,7 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
     final mealProvider = context.read<MealProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FadeSlideIn(
           child: SingleChildScrollView(
@@ -395,7 +395,7 @@ class _AiRecommendationScreenState extends State<AiRecommendationScreen> {
         curve: Curves.easeOut,
         height: 76,
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFD5E6D5) : Colors.white,
+          color: selected ? AppColors.secondaryContainer : Colors.white,
           borderRadius: BorderRadius.circular(13),
         ),
         child: Column(
