@@ -143,7 +143,7 @@ Return realistic Thai meal prices and nutrition estimates. Put a concise Thai ex
         },
         body: JSON.stringify({
           model: process.env.OPENAI_MODEL || 'gpt-6-luna',
-          reasoning: { effort: 'none' },
+          reasoning: { effort: 'minimal' },
           max_output_tokens: 1600,
           input: [
             {

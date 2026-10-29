@@ -22,7 +22,7 @@ cp .env.example .env
 PORT=5000
 NODE_ENV=development
 OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-6-luna
+OPENAI_MODEL=gpt-5-mini
 ```
 
 ### 3. เริ่มต้น Server
