@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -36,8 +37,7 @@ void main() {
 
     await UserSettingsDao.instance.save(settings);
 
-    final result = await UserSettingsDao.instance
-        .getByUserId('test-user-001');
+    final result = await UserSettingsDao.instance.getByUserId('test-user-001');
 
     expect(result, isNotNull);
     expect(result!.dailyBudget, 150);
@@ -51,21 +51,14 @@ void main() {
 
   test('แก้ไขงบประมาณของผู้ใช้', () async {
     await UserSettingsDao.instance.save(
-      const UserSettings(
-        userId: 'test-user-002',
-        dailyBudget: 100,
-      ),
+      const UserSettings(userId: 'test-user-002', dailyBudget: 100),
     );
 
     final updatedRows = await UserSettingsDao.instance.update(
-      const UserSettings(
-        userId: 'test-user-002',
-        dailyBudget: 200,
-      ),
+      const UserSettings(userId: 'test-user-002', dailyBudget: 200),
     );
 
-    final result = await UserSettingsDao.instance
-        .getByUserId('test-user-002');
+    final result = await UserSettingsDao.instance.getByUserId('test-user-002');
 
     expect(updatedRows, 1);
     expect(result!.dailyBudget, 200);
@@ -78,11 +71,9 @@ void main() {
       const UserSettings(userId: 'test-user-003'),
     );
 
-    final deletedRows =
-        await UserSettingsDao.instance.delete('test-user-003');
+    final deletedRows = await UserSettingsDao.instance.delete('test-user-003');
 
-    final result = await UserSettingsDao.instance
-        .getByUserId('test-user-003');
+    final result = await UserSettingsDao.instance.getByUserId('test-user-003');
 
     expect(deletedRows, 1);
     expect(result, isNull);
