@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/widgets/promkin_header.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
-import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
 import 'package:promkin_app/features/recipe_search/data/recipe_model.dart';
 import 'package:promkin_app/features/recipe_search/data/recipe_service.dart';
 import 'package:provider/provider.dart';
@@ -358,13 +357,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
         child: FadeSlideIn(
           child: Column(
             children: [
-              PromkinHeader(
-                onTune: () => FocusScope.of(context).requestFocus(FocusNode()),
-                onProfile: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                ),
-              ),
+              const PromkinHeader(showTune: false, showProfile: false),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Row(
