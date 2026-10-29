@@ -22,7 +22,7 @@ class DatabaseHelper {
       path,
       version: AppConstants.databaseVersion,
       onCreate: _createDB,
-      onUpgrade: _onUpgrade,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -44,35 +44,35 @@ class DatabaseHelper {
         emoji TEXT NOT NULL DEFAULT '🍽️',
         time TEXT NOT NULL DEFAULT '12:00',
         tags TEXT NOT NULL DEFAULT '',
-        imageUrl TEXT NOT NULL DEFAULT ''
+        imageUrl TEXT NOT NULL DEFAULT '',
+        source TEXT NOT NULL DEFAULT 'ai',
+        sourceId TEXT
       )
     ''');
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      try {
-        await db.execute(
-          "ALTER TABLE meals ADD COLUMN emoji TEXT NOT NULL DEFAULT '🍽️'",
-        );
-      } catch (_) {}
-      try {
-        await db.execute(
-          "ALTER TABLE meals ADD COLUMN time TEXT NOT NULL DEFAULT '12:00'",
-        );
-      } catch (_) {}
-      try {
-        await db.execute(
-          "ALTER TABLE meals ADD COLUMN tags TEXT NOT NULL DEFAULT ''",
-        );
-      } catch (_) {}
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN emoji TEXT NOT NULL DEFAULT '🍽️'",
+      );
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN time TEXT NOT NULL DEFAULT '12:00'",
+      );
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN tags TEXT NOT NULL DEFAULT ''",
+      );
     }
     if (oldVersion < 3) {
-      try {
-        await db.execute(
-          "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
-        );
-      } catch (_) {}
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    if (oldVersion < 4) {
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN source TEXT NOT NULL DEFAULT 'ai'",
+      );
+      await db.execute('ALTER TABLE meals ADD COLUMN sourceId TEXT');
     }
   }
 
@@ -117,8 +117,10 @@ class DatabaseHelper {
   }
 
   Future<void> close() async {
-    final db = await database;
-    db.close();
-    _database = null;
+    final db = _database;
+    if (db != null) {
+      await db.close();
+      _database = null;
+    }
   }
 }

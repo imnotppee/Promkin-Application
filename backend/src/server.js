@@ -49,11 +49,12 @@ app.use((err, req, res, next) => {
 
 // Start Server
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`===============================================`);
     console.log(`🌿 PROM KIN REST API Server is running on:`);
     console.log(`   Local:            http://localhost:${PORT}`);
     console.log(`   Android Emulator: http://10.0.2.2:${PORT}`);
+    console.log(`   Physical Android: set BACKEND_BASE_URL to this computer's LAN IP`);
     console.log(`===============================================`);
   });
 }

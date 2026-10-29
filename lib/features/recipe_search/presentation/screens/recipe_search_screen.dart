@@ -221,9 +221,9 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
                                   recipeName: details.name,
                                   emoji: details.emoji,
                                   imageUrl: details.imageUrl,
-                                  price: details.estimatedPrice > 0
-                                      ? details.estimatedPrice
-                                      : 50,
+                                  source: 'themealdb',
+                                  sourceId: details.id,
+                                  price: details.estimatedPrice,
                                   calories: details.calories > 0
                                       ? details.calories
                                       : null,
@@ -269,7 +269,9 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
       recipeName: details.name,
       emoji: details.emoji,
       imageUrl: details.imageUrl,
-      price: details.estimatedPrice > 0 ? details.estimatedPrice : 50,
+      source: 'themealdb',
+      sourceId: details.id,
+      price: details.estimatedPrice,
       calories: details.calories > 0 ? details.calories : null,
       protein: details.protein > 0 ? details.protein : null,
       carbs: details.carbs > 0 ? details.carbs : null,

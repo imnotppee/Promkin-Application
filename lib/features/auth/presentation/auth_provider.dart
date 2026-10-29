@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:promkin_app/core/services/firebase_service.dart';
 import 'package:promkin_app/features/auth/data/user_model.dart';
 
 class AuthProvider extends ChangeNotifier {
+  static Future<void>? _googleSignInInitialization;
+
   FirebaseAuth? _auth;
   StreamSubscription<User?>? _authSubscription;
 
@@ -217,27 +220,173 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createAccount(String name, String email, String password) async {
+  Future<bool> signInWithGoogle() async {
+    _errorMessage = null;
     _isLoading = true;
     notifyListeners();
-    try {
-      await Future.delayed(const Duration(milliseconds: 400));
+
+    if (_auth == null) {
+      await Future.delayed(const Duration(milliseconds: 300));
       _currentUser = UserModel(
-        id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
-        name: name.trim(),
-        email: email.trim(),
-      );
-      await FirebaseService.instance.syncUserProfile(
-        _currentUser!.id,
-        _currentUser!.toJson(),
+        id: 'usr_google_demo',
+        name: 'Promkin User',
+        email: 'user@promkin.app',
       );
       _isLoading = false;
       notifyListeners();
       return true;
-    } catch (_) {
+    }
+
+    try {
+      _googleSignInInitialization ??= GoogleSignIn.instance.initialize();
+      await _googleSignInInitialization;
+
+      if (!GoogleSignIn.instance.supportsAuthenticate()) {
+        _errorMessage = 'อุปกรณ์นี้ยังไม่รองรับการเข้าสู่ระบบด้วย Google';
+        return false;
+      }
+
+      final googleUser = await GoogleSignIn.instance.authenticate();
+      final idToken = googleUser.authentication.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        _errorMessage = 'Google ไม่ส่งข้อมูลยืนยันตัวตน กรุณาตรวจสอบ OAuth';
+        return false;
+      }
+
+      final credential = GoogleAuthProvider.credential(idToken: idToken);
+      final userCredential = await _auth!.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        _errorMessage = 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ';
+        return false;
+      }
+
+      Map<String, dynamic>? profile;
+      try {
+        profile = await FirebaseService.instance.getUserProfile(
+          firebaseUser.uid,
+        );
+      } catch (e) {
+        debugPrint('Read Google user profile failed: $e');
+      }
+
+      final user = _createUserModel(firebaseUser, profile: profile);
+      _currentUser = user;
+      try {
+        await FirebaseService.instance.syncUserProfile(
+          firebaseUser.uid,
+          user.toJson(),
+        );
+      } catch (e) {
+        debugPrint('Sync Google user profile failed: $e');
+      }
+      return true;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Firebase Google sign-in error: ${e.code}');
+      _errorMessage = switch (e.code) {
+        'account-exists-with-different-credential' =>
+          'อีเมลนี้ผูกกับวิธีเข้าสู่ระบบอื่นอยู่แล้ว',
+        'network-request-failed' => 'เชื่อมต่ออินเทอร์เน็ตไม่ได้',
+        'operation-not-allowed' => 'ยังไม่ได้เปิด Google ใน Firebase Console',
+        _ => 'Firebase ปฏิเสธการเข้าสู่ระบบด้วย Google (${e.code})',
+      };
+      return false;
+    } catch (e) {
+      final details = e.toString();
+      debugPrint('Google sign-in failed: $details');
+      if (details.toLowerCase().contains('cancel')) {
+        _errorMessage = 'ยกเลิกการเข้าสู่ระบบด้วย Google';
+      } else if (details.contains('serverClientId') ||
+          details.contains('clientConfigurationError')) {
+        _errorMessage =
+            'Android Google OAuth ยังตั้งค่าไม่ครบ: เพิ่ม SHA-1 ใน Firebase แล้วดาวน์โหลด google-services.json ใหม่';
+      } else {
+        _errorMessage = 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ กรุณาตรวจสอบ OAuth';
+      }
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<bool> createAccount(String name, String email, String password) async {
+    _errorMessage = null;
+    final normalizedName = name.trim();
+    final normalizedEmail = email.trim();
+
+    if (normalizedName.isEmpty || normalizedEmail.isEmpty || password.isEmpty) {
+      _errorMessage = 'กรุณากรอกชื่อ อีเมล และรหัสผ่าน';
+      notifyListeners();
       return false;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    if (_auth == null) {
+      await Future.delayed(const Duration(milliseconds: 400));
+      _currentUser = UserModel(
+        id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+        name: normalizedName,
+        email: normalizedEmail,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    }
+
+    try {
+      final credential = await _auth!.createUserWithEmailAndPassword(
+        email: normalizedEmail,
+        password: password,
+      );
+
+      final firebaseUser = credential.user;
+      if (firebaseUser == null) {
+        _errorMessage = 'สร้างบัญชีไม่สำเร็จ กรุณาลองอีกครั้ง';
+        return false;
+      }
+
+      try {
+        await firebaseUser.updateDisplayName(normalizedName);
+      } catch (e) {
+        debugPrint('Could not update Firebase display name: $e');
+      }
+      final user = _createUserModel(
+        _auth!.currentUser ?? firebaseUser,
+        profile: {'name': normalizedName},
+      );
+      _currentUser = user;
+
+      // Account creation succeeds even if profile sync is temporarily offline.
+      try {
+        await FirebaseService.instance.syncUserProfile(user.id, {
+          ...user.toJson(),
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        });
+      } catch (e) {
+        debugPrint('Sync new user profile failed: $e');
+      }
+
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = switch (e.code) {
+        'email-already-in-use' => 'อีเมลนี้มีบัญชีอยู่แล้ว',
+        'invalid-email' => 'รูปแบบอีเมลไม่ถูกต้อง',
+        'weak-password' => 'รหัสผ่านไม่ปลอดภัยพอ',
+        'operation-not-allowed' => 'ยังไม่ได้เปิดสมัครด้วยอีเมลใน Firebase',
+        'network-request-failed' => 'เชื่อมต่ออินเทอร์เน็ตไม่ได้',
+        _ => 'สร้างบัญชีไม่สำเร็จ กรุณาลองอีกครั้ง',
+      };
+      return false;
+    } catch (e) {
+      debugPrint('Create account failed: $e');
+      _errorMessage = 'เกิดข้อผิดพลาดขณะสร้างบัญชี';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

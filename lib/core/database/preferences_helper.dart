@@ -19,6 +19,16 @@ class PreferencesHelper {
         false;
   }
 
+  static double getMonthlyBudget() {
+    return _prefs?.getDouble(AppConstants.keyMonthlyBudget) ??
+        getDailyBudget() * 30;
+  }
+
+  static Future<bool> setMonthlyBudget(double budget) async {
+    return await _prefs?.setDouble(AppConstants.keyMonthlyBudget, budget) ??
+        false;
+  }
+
   // Calories
   static int getDailyCalories() {
     return _prefs?.getInt(AppConstants.keyDailyCalories) ??

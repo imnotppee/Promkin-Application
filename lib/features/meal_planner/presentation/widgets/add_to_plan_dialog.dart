@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
@@ -14,6 +15,8 @@ class AddToPlanDialog extends StatefulWidget {
   final double? carbs;
   final double? fat;
   final String imageUrl;
+  final String source;
+  final String? sourceId;
   final MealProvider mealProvider;
 
   const AddToPlanDialog({
@@ -26,6 +29,8 @@ class AddToPlanDialog extends StatefulWidget {
     this.carbs,
     this.fat,
     this.imageUrl = '',
+    this.source = 'ai',
+    this.sourceId,
     required this.mealProvider,
   });
 
@@ -39,6 +44,8 @@ class AddToPlanDialog extends StatefulWidget {
     double? carbs,
     double? fat,
     String imageUrl = '',
+    String source = 'ai',
+    String? sourceId,
     required MealProvider mealProvider,
   }) {
     return showDialog<bool>(
@@ -52,6 +59,8 @@ class AddToPlanDialog extends StatefulWidget {
         carbs: carbs,
         fat: fat,
         imageUrl: imageUrl,
+        source: source,
+        sourceId: sourceId,
         mealProvider: mealProvider,
       ),
     );
@@ -65,6 +74,8 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
   late DateTime _selectedDate;
   String _mealSlot = 'มื้อกลางวัน';
   String _time = '12:00';
+  late final TextEditingController _priceController;
+  String? _priceError;
 
   final List<String> _mealSlots = const [
     'มื้อเช้า',
@@ -77,6 +88,15 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
   void initState() {
     super.initState();
     _selectedDate = widget.mealProvider.selectedDate;
+    _priceController = TextEditingController(
+      text: widget.price > 0 ? widget.price.toStringAsFixed(0) : '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _priceController.dispose();
+    super.dispose();
   }
 
   void _onSlotChanged(String slot) {
@@ -138,7 +158,9 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                             ),
                           ),
                           Text(
-                            '${widget.recipeName} · ฿${widget.price.toStringAsFixed(0)}',
+                            widget.price > 0
+                                ? '${widget.recipeName} · ฿${widget.price.toStringAsFixed(0)}'
+                                : widget.recipeName,
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.muted,
@@ -204,10 +226,11 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                                       AppColors.primaryContainer,
                                     ),
                                     const SizedBox(width: 5),
-                                    _badge(
-                                      'ประมาณ ฿${widget.price.toStringAsFixed(0)}',
-                                      AppColors.tertiaryContainer,
-                                    ),
+                                    if (widget.price > 0)
+                                      _badge(
+                                        'ประมาณ ฿${widget.price.toStringAsFixed(0)}',
+                                        AppColors.tertiaryContainer,
+                                      ),
                                   ],
                                 ),
                                 const SizedBox(height: 7),
@@ -255,6 +278,28 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                   ),
                 ),
                 const SizedBox(height: 18),
+
+                TextField(
+                  controller: _priceController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d*\.?\d{0,2}'),
+                    ),
+                  ],
+                  onChanged: (_) {
+                    if (_priceError != null) setState(() => _priceError = null);
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'ราคาต่อมื้อ (บาท)',
+                    hintText: 'กรอกราคาจริง',
+                    prefixIcon: const Icon(Icons.payments_outlined),
+                    errorText: _priceError,
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // Select Day
                 const Text(
@@ -452,6 +497,11 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       onPressed: () async {
+                        final price = double.tryParse(_priceController.text);
+                        if (price == null || price < 0) {
+                          setState(() => _priceError = 'กรุณากรอกราคาต่อมื้อ');
+                          return;
+                        }
                         final dateStr = DateFormat(
                           'yyyy-MM-dd',
                         ).format(_selectedDate);
@@ -459,7 +509,7 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
                           name: widget.recipeName,
                           mealType: _mealSlot,
-                          price: widget.price,
+                          price: price,
                           calories: widget.calories ?? 0,
                           protein: widget.protein ?? 0,
                           carbs: widget.carbs ?? 0,
@@ -469,6 +519,8 @@ class _AddToPlanDialogState extends State<AddToPlanDialog> {
                           time: _time,
                           tags: [_mealSlot, 'เพิ่มจากเมนู'],
                           imageUrl: widget.imageUrl,
+                          source: widget.source,
+                          sourceId: widget.sourceId,
                         );
 
                         await widget.mealProvider.addMeal(newMeal);

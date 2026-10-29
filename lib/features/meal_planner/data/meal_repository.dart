@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/core/database/database_helper.dart';
 import 'package:promkin_app/core/services/firebase_service.dart';
@@ -8,11 +10,6 @@ class MealRepository {
 
   // In-memory cache for fast UI updates & test compatibility
   final List<MealModel> _memoryStore = [];
-
-  // Demo user ID used by the current AuthProvider.
-  // Replace this with the authenticated user's ID when real Firebase
-  // Authentication is implemented.
-  static const String _defaultUserId = 'usr_001';
 
   MealRepository({DatabaseHelper? dbHelper, FirebaseService? firebaseService})
     : _dbHelper = dbHelper ?? DatabaseHelper.instance,
@@ -66,16 +63,20 @@ class MealRepository {
         return;
       }
 
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+
       final mealDate = DateTime.parse(meal.date);
 
       final mealPlanId = await _firebaseService.getOrCreateMealPlan(
-        userId: _defaultUserId,
+        userId: userId,
         planDate: mealDate,
       );
 
       final firestoreData = meal.toFirestoreMap(
         mealPlanId: mealPlanId,
-        source: 'ai',
+        source: meal.source,
+        sourceId: meal.sourceId,
       );
 
       await _firebaseService.savePlannedMealToCloud(
@@ -88,6 +89,17 @@ class MealRepository {
   }
 
   Future<void> deleteMeal(String id) async {
+    // Remove the cloud record as well as local copies for signed-in users.
+    try {
+      if (_firebaseService.isInitialized &&
+          FirebaseAuth.instance.currentUser != null) {
+        await _firebaseService.deletePlannedMealFromCloud(id);
+      }
+    } catch (e) {
+      // Keep local planning usable offline; log failed cloud deletes for repair.
+      debugPrint('Could not delete planned meal from Firestore: $e');
+    }
+
     _memoryStore.removeWhere((m) => m.id == id);
 
     try {

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/constants/app_strings.dart';
+import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/home/presentation/screens/dashboard_screen.dart';
 import 'package:promkin_app/features/meal_planner/presentation/screens/weekly_planner_screen.dart';
 import 'package:promkin_app/features/ai_recommendation/presentation/screens/ai_recommendation_screen.dart';
 import 'package:promkin_app/features/recipe_search/presentation/screens/recipe_search_screen.dart';
 import 'package:promkin_app/features/settings_budget/presentation/screens/settings_screen.dart';
+import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -16,25 +19,45 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
+  final Set<int> _visitedTabs = {0};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final userId = context.read<AuthProvider>().currentUser?.id;
+      if (userId != null) {
+        context.read<SettingsProvider>().loadForUser(userId);
+      }
+    });
+  }
 
   void _onSelectTab(int index) {
     setState(() {
       _currentIndex = index;
+      _visitedTabs.add(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final screens = [
+    final screens = <Widget>[
       DashboardScreen(onNavigateToTab: _onSelectTab),
       const WeeklyPlannerScreen(),
       const AiRecommendationScreen(),
       const RecipeSearchScreen(),
       const SettingsScreen(),
     ];
+    final tabChildren = List<Widget>.generate(
+      screens.length,
+      (index) => _visitedTabs.contains(index)
+          ? screens[index]
+          : const SizedBox.shrink(),
+    );
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: screens),
+      body: IndexedStack(index: _currentIndex, children: tabChildren),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.paper,

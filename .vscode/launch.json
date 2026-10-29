@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PromKin on Android (local API)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--dart-define=BACKEND_BASE_URL=http://10.111.2.65:5000/api"
+      ]
+    }
+  ]
+}

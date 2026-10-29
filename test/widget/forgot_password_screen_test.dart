@@ -11,9 +11,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const MaterialApp(home: ForgotPasswordScreen()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: ForgotPasswordScreen()));
     await tester.pumpAndSettle();
 
     expect(find.text('Forgot Password'), findsOneWidget);

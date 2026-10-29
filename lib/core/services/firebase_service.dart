@@ -158,6 +158,15 @@ class FirebaseService {
     return true;
   }
 
+  /// Delete a planned meal. Firestore rules verify ownership through its plan.
+  Future<void> deletePlannedMealFromCloud(String mealId) async {
+    _checkInitialized();
+    if (mealId.trim().isEmpty) {
+      throw ArgumentError('Meal ID must not be empty.');
+    }
+    await _firestore.collection('planned_meals').doc(mealId).delete();
+  }
+
   /// Read a planned meal by document ID.
   Future<Map<String, dynamic>?> getPlannedMealFromCloud(String mealId) async {
     _checkInitialized();
@@ -227,5 +236,20 @@ class FirebaseService {
     debugPrint('User profile synced to Cloud Firestore: $userId');
 
     return profile;
+  }
+
+  /// Persist per-user preferences in the user's own profile document.
+  Future<void> syncUserSettings(
+    String userId,
+    Map<String, dynamic> settings,
+  ) async {
+    _checkInitialized();
+    if (userId.trim().isEmpty) {
+      throw ArgumentError('User ID must not be empty.');
+    }
+    await _firestore.collection('users').doc(userId).set({
+      'settings': settings,
+      'settingsUpdatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 }

@@ -61,5 +61,11 @@ void main() {
       await provider.toggleReminder(false);
       expect(provider.isMealReminderEnabled, isFalse);
     });
+
+    test('loadForUser safely returns in offline mode', () async {
+      final provider = SettingsProvider();
+      await provider.loadForUser('user_offline_123');
+      expect(provider.dailyBudget, greaterThan(0));
+    });
   });
 }
