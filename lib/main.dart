@@ -161,7 +161,7 @@ class _PromkinAppState extends State<PromkinApp> {
             home: Consumer<AuthProvider>(
               builder: (context, auth, _) => auth.isAuthenticated
                   ? const MainNavigationScreen()
-                  : const LoginScreen(),
+                  : const LoginScreen(initialRegister: true),
             ),
           );
         },

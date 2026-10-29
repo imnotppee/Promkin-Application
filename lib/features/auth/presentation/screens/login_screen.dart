@@ -6,7 +6,10 @@ import 'package:promkin_app/core/widgets/motion_widgets.dart';
 import 'package:promkin_app/features/auth/presentation/screens/forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.initialRegister = false});
+
+  final bool initialRegister;
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -16,10 +19,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
-  bool _register = false;
+  late bool _register;
   bool _remember = true;
   bool _showPassword = false;
   bool _acceptedTerms = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _register = widget.initialRegister;
+  }
 
   @override
   void dispose() {

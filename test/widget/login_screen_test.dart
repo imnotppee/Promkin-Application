@@ -5,6 +5,20 @@ import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/auth/presentation/screens/login_screen.dart';
 
 void main() {
+  testWidgets('LoginScreen can open directly on registration', (tester) async {
+    final authProvider = AuthProvider();
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AuthProvider>.value(
+        value: authProvider,
+        child: const MaterialApp(home: LoginScreen(initialRegister: true)),
+      ),
+    );
+
+    expect(find.text('Create Account'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'สร้างบัญชี'), findsOneWidget);
+  });
+
   testWidgets('LoginScreen renders email, password fields and performs login', (
     tester,
   ) async {
