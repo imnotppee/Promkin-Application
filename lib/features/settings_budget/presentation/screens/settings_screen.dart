@@ -297,88 +297,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
       color: Colors.white,
       borderRadius: BorderRadius.circular(21),
     ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'งบประมาณและเป้าหมาย',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 10),
-        _actionTile(
-          Icons.account_balance_wallet_outlined,
-          'งบประมาณรายวัน',
-          CurrencyFormatter.format(settings.dailyBudget),
-          () => _editNumber(
-            'งบประมาณรายวัน (บาท)',
-            settings.dailyBudget.toStringAsFixed(0),
-            (v) => settings.updateBudget(double.parse(v)),
+    child: Material(
+      color: Colors.transparent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'งบประมาณและเป้าหมาย',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
-        ),
-        _actionTile(
-          Icons.calendar_month_outlined,
-          'งบประมาณต่อเดือน',
-          CurrencyFormatter.format(settings.monthlyBudget),
-          () => _editNumber(
-            'งบประมาณรายเดือน (บาท)',
-            settings.monthlyBudget.toStringAsFixed(0),
-            (v) => settings.updateMonthlyBudget(double.parse(v)),
+          const SizedBox(height: 10),
+          _actionTile(
+            Icons.account_balance_wallet_outlined,
+            'งบประมาณรายวัน',
+            CurrencyFormatter.format(settings.dailyBudget),
+            () => _editNumber(
+              'งบประมาณรายวัน (บาท)',
+              settings.dailyBudget.toStringAsFixed(0),
+              (v) => settings.updateBudget(double.parse(v)),
+            ),
           ),
-        ),
-        _actionTile(
-          Icons.local_fire_department_outlined,
-          'เป้าหมายแคลอรีต่อวัน',
-          '${settings.dailyCalories} kcal',
-          () => _editNumber(
-            'เป้าหมายแคลอรี (kcal)',
-            settings.dailyCalories.toString(),
-            (v) => settings.updateCalories(int.parse(v)),
+          _actionTile(
+            Icons.calendar_month_outlined,
+            'งบประมาณต่อเดือน',
+            CurrencyFormatter.format(settings.monthlyBudget),
+            () => _editNumber(
+              'งบประมาณรายเดือน (บาท)',
+              settings.monthlyBudget.toStringAsFixed(0),
+              (v) => settings.updateMonthlyBudget(double.parse(v)),
+            ),
           ),
-        ),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.restaurant_menu, color: AppColors.primary),
-          title: const Text('จำนวนมื้ออาหารต่อวัน'),
-          trailing: DropdownButton<int>(
-            value: settings.mealsPerDay,
-            underline: const SizedBox(),
-            items: [1, 2, 3, 4, 5]
-                .map((v) => DropdownMenuItem(value: v, child: Text('$v มื้อ')))
-                .toList(),
-            onChanged: (v) {
-              if (v != null) settings.updateMealsPerDay(v);
-            },
+          _actionTile(
+            Icons.local_fire_department_outlined,
+            'เป้าหมายแคลอรีต่อวัน',
+            '${settings.dailyCalories} kcal',
+            () => _editNumber(
+              'เป้าหมายแคลอรี (kcal)',
+              settings.dailyCalories.toString(),
+              (v) => settings.updateCalories(int.parse(v)),
+            ),
           ),
-        ),
-        const Divider(),
-        const Text(
-          'วัตถุดิบที่ไม่ต้องการ',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 7,
-          children: [
-            ...settings.dislikedIngredients.map(
-              (v) => InputChip(
-                label: Text(v),
-                onDeleted: () => settings.removeDislikedIngredient(v),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(
+              Icons.restaurant_menu,
+              color: AppColors.primary,
+            ),
+            title: const Text('จำนวนมื้ออาหารต่อวัน'),
+            trailing: DropdownButton<int>(
+              value: settings.mealsPerDay,
+              underline: const SizedBox(),
+              items: [1, 2, 3, 4, 5]
+                  .map(
+                    (v) => DropdownMenuItem(value: v, child: Text('$v มื้อ')),
+                  )
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) settings.updateMealsPerDay(v);
+              },
+            ),
+          ),
+          const Divider(),
+          const Text(
+            'วัตถุดิบที่ไม่ต้องการ',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 7,
+            children: [
+              ...settings.dislikedIngredients.map(
+                (v) => InputChip(
+                  label: Text(v),
+                  onDeleted: () => settings.removeDislikedIngredient(v),
+                ),
               ),
-            ),
-            ActionChip(
-              avatar: const Icon(Icons.add, size: 16),
-              label: const Text('เพิ่มวัตถุดิบ'),
-              onPressed: () => _addIngredient(settings),
-            ),
-          ],
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('แจ้งเตือนมื้ออาหาร'),
-          value: settings.isMealReminderEnabled,
-          onChanged: settings.toggleReminder,
-        ),
-      ],
+              ActionChip(
+                avatar: const Icon(Icons.add, size: 16),
+                label: const Text('เพิ่มวัตถุดิบ'),
+                onPressed: () => _addIngredient(settings),
+              ),
+            ],
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('แจ้งเตือนมื้ออาหาร'),
+            value: settings.isMealReminderEnabled,
+            onChanged: settings.toggleReminder,
+          ),
+        ],
+      ),
     ),
   );
 

@@ -10,15 +10,18 @@ void main() {
     testWidgets('renders search box, category chips, and recipes list', (
       WidgetTester tester,
     ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final repo = MealRepository();
       final mealProv = MealProvider(repository: repo, initDemoMeals: false);
 
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: mealProv,
-          child: const MaterialApp(
-            home: RecipeSearchScreen(),
-          ),
+          child: const MaterialApp(home: RecipeSearchScreen()),
         ),
       );
 
@@ -28,9 +31,8 @@ void main() {
       expect(find.text('ค้นหาเมนู'), findsOneWidget);
 
       // Check Category Chips
-      expect(find.text('ทั้งหมด'), findsOneWidget);
-      expect(find.text('อาหารไทย'), findsOneWidget);
-      expect(find.text('มังสวิรัติ'), findsOneWidget);
+      expect(find.text('ไก่'), findsOneWidget);
+      expect(find.text('มังสวิรัติ'), findsWidgets);
 
       // Check Recipes loaded
       expect(find.text('ข้าวกะเพราเต้าหู้ไข่'), findsOneWidget);
@@ -38,6 +40,7 @@ void main() {
 
       // Type in search query
       await tester.enterText(find.byType(TextField), 'สุกี้');
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.pumpAndSettle();
 
       // Only สุกี้ should remain

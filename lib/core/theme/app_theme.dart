@@ -40,9 +40,11 @@ class AppTheme {
         ),
         headlineMedium: text.headlineMedium?.copyWith(
           fontWeight: FontWeight.w600,
+          color: AppColors.ink,
         ),
         titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        bodyMedium: text.bodyMedium?.copyWith(color: AppColors.ink),
       ),
       appBarTheme: AppBarTheme(
         centerTitle: false,

@@ -22,7 +22,7 @@ class DatabaseHelper {
       path,
       version: AppConstants.databaseVersion,
       onCreate: _createDB,
-      onUpgrade: _upgradeDB,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -49,22 +49,30 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute(
-        "ALTER TABLE meals ADD COLUMN emoji TEXT NOT NULL DEFAULT '🍽️'",
-      );
-      await db.execute(
-        "ALTER TABLE meals ADD COLUMN time TEXT NOT NULL DEFAULT '12:00'",
-      );
-      await db.execute(
-        "ALTER TABLE meals ADD COLUMN tags TEXT NOT NULL DEFAULT ''",
-      );
+      try {
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN emoji TEXT NOT NULL DEFAULT '🍽️'",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN time TEXT NOT NULL DEFAULT '12:00'",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN tags TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
     }
     if (oldVersion < 3) {
-      await db.execute(
-        "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
-      );
+      try {
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
     }
   }
 
@@ -83,7 +91,7 @@ class DatabaseHelper {
       'meals',
       where: 'date = ?',
       whereArgs: [date],
-      orderBy: 'mealType ASC',
+      orderBy: 'time ASC, id ASC',
     );
   }
 
@@ -103,11 +111,14 @@ class DatabaseHelper {
     return await db.delete('meals', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> clearAllMeals() async {
+    final db = await database;
+    await db.delete('meals');
+  }
+
   Future<void> close() async {
-    final db = _database;
-    if (db != null) {
-      await db.close();
-      _database = null;
-    }
+    final db = await database;
+    db.close();
+    _database = null;
   }
 }

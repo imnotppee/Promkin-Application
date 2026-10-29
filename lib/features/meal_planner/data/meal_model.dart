@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MealModel {
   final String id;
   final String name;
@@ -69,6 +71,8 @@ class MealModel {
     );
   }
 
+  /// Convert to SQLite map.
+  /// Keep the existing field names for compatibility with DatabaseHelper.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -89,6 +93,58 @@ class MealModel {
     };
   }
 
+  /// Convert to Cloud Firestore format.
+  Map<String, dynamic> toFirestoreMap({
+    required String mealPlanId,
+    required String source,
+    String? sourceId,
+  }) {
+    final dateTime = DateTime.parse('${date}T$time:00');
+
+    return {
+      'meal_plan_id': mealPlanId,
+      'source': source,
+      'source_id': sourceId,
+      'recipe_name': name,
+      'meal_type': _toFirestoreMealType(mealType),
+      'scheduled_at': Timestamp.fromDate(dateTime),
+      'servings': 1,
+      'estimated_cost': price,
+      'calories': calories,
+      'protein_g': protein,
+      'carbs_g': carbs,
+      'fat_g': fat,
+    };
+  }
+
+  /// Convert meal type to the values defined in the ERD.
+  String _toFirestoreMealType(String value) {
+    switch (value.trim().toLowerCase()) {
+      case 'มื้อเช้า':
+      case 'อาหารเช้า':
+      case 'breakfast':
+        return 'breakfast';
+
+      case 'มื้อกลางวัน':
+      case 'อาหารกลางวัน':
+      case 'lunch':
+        return 'lunch';
+
+      case 'มื้อเย็น':
+      case 'อาหารเย็น':
+      case 'dinner':
+        return 'dinner';
+
+      case 'ของว่าง':
+      case 'อาหารว่าง':
+      case 'snack':
+        return 'snack';
+
+      default:
+        return value;
+    }
+  }
+
   static double _parsePrice(dynamic val) {
     if (val is num) return val.toDouble();
     if (val is String) return double.tryParse(val) ?? 0.0;
@@ -103,6 +159,7 @@ class MealModel {
 
   factory MealModel.fromMap(Map<String, dynamic> map) {
     List<String> parsedTags = [];
+
     if (map['tags'] != null && map['tags'].toString().isNotEmpty) {
       parsedTags = map['tags'].toString().split(',');
     }

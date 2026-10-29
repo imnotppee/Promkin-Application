@@ -118,11 +118,12 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 170,
+                      height: 220,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: 7,
-                        separatorBuilder: (_, __) => const SizedBox(width: 10),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 10),
                         itemBuilder: (context, index) {
                           final date = _weekStart.add(Duration(days: index));
                           final meals = provider.allMeals
@@ -178,7 +179,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                                           ),
                                         ],
                                       ),
-                                      const Spacer(),
+                                      const SizedBox(height: 6),
                                       Container(
                                         width: double.infinity,
                                         padding: const EdgeInsets.symmetric(

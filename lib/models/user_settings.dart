@@ -1,4 +1,3 @@
-
 class UserSettings {
   final String userId;
   final double dailyBudget;

@@ -10,14 +10,16 @@ class RecipeService {
   RecipeService({http.Client? client}) : _client = client ?? http.Client();
 
   Future<List<String>> getCategories() async {
-    final response = await _client.get(
-      Uri.parse('${ApiEndpoints.recipes}/categories'),
-    ).timeout(const Duration(seconds: 15));
+    final response = await _client
+        .get(Uri.parse('${ApiEndpoints.recipes}/categories'))
+        .timeout(const Duration(seconds: 15));
     if (response.statusCode != 200) {
       throw Exception('Could not load recipe categories');
     }
     final result = jsonDecode(utf8.decode(response.bodyBytes));
-    return (result['data'] as List? ?? []).map((item) => item.toString()).toList();
+    return (result['data'] as List? ?? [])
+        .map((item) => item.toString())
+        .toList();
   }
 
   Future<List<RecipeModel>> search({String? query, String? category}) async {
