@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
+import 'package:promkin_app/core/widgets/promkin_header.dart';
+import 'package:promkin_app/core/widgets/motion_widgets.dart';
+import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
+import 'package:promkin_app/features/recipe_search/data/recipe_model.dart';
+import 'package:promkin_app/features/recipe_search/data/recipe_service.dart';
+import 'package:provider/provider.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
 import 'package:promkin_app/features/meal_planner/presentation/widgets/add_to_plan_dialog.dart';
-import 'package:promkin_app/features/recipe_search/data/recipe_model.dart';
 
 class RecipeSearchScreen extends StatefulWidget {
   const RecipeSearchScreen({super.key});
@@ -14,322 +20,628 @@ class RecipeSearchScreen extends StatefulWidget {
 
 class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'ทั้งหมด';
+  final RecipeService _recipeService = RecipeService();
+  final List<String> _categories = [];
+  List<RecipeModel> _recipes = [];
+  String _selectedCategory = 'Chicken';
+  String? _error;
+  bool _loading = true;
+  Timer? _debounce;
 
-  final List<String> _categories = const [
-    'ทั้งหมด',
-    'อาหารไทย',
-    'มังสวิรัติ',
-    'โปรตีนสูง',
-    'คลีน',
-  ];
-
-  final List<RecipeModel> _catalog = const [
-    RecipeModel(
-      id: 'rec_1',
-      emoji: '🍛',
-      name: 'ข้าวกะเพราเต้าหู้ไข่',
-      category: 'มังสวิรัติ',
-      cookingMinutes: 20,
-      calories: 380,
-      estimatedPrice: 45.0,
-      description: 'เต้าหู้ไข่ · กะเพรา · ข้าวกล้อง · ทำง่าย อิ่มสบาย',
-      tags: ['มังสวิรัติ', 'ทำง่าย'],
-      protein: 18.0,
-      carbs: 52.0,
-      fat: 10.0,
-    ),
-    RecipeModel(
-      id: 'rec_2',
-      emoji: '🍜',
-      name: 'ก๋วยเตี๋ยวต้มยำหมู',
-      category: 'อาหารไทย',
-      cookingMinutes: 25,
-      calories: 480,
-      estimatedPrice: 55.0,
-      description: 'หมูสับ · เส้นเล็ก · ถั่วลิสง · มะนาวแท้',
-      tags: ['อาหารไทย', 'รสแซ่บ'],
-      protein: 24.0,
-      carbs: 62.0,
-      fat: 14.0,
-    ),
-    RecipeModel(
-      id: 'rec_3',
-      emoji: '🍲',
-      name: 'สุกี้น้ำไก่',
-      category: 'โปรตีนสูง',
-      cookingMinutes: 20,
-      calories: 360,
-      estimatedPrice: 50.0,
-      description: 'อกไก่ · ผักกาดขาว · วุ้นเส้น · น้ำจิ้มเต้าหู้ยี้',
-      tags: ['โปรตีนสูง', 'คลีน'],
-      protein: 32.0,
-      carbs: 34.0,
-      fat: 8.0,
-    ),
-    RecipeModel(
-      id: 'rec_4',
-      emoji: '🥗',
-      name: 'ยำวุ้นเส้นหมูสับ',
-      category: 'คลีน',
-      cookingMinutes: 15,
-      calories: 290,
-      estimatedPrice: 48.0,
-      description: 'วุ้นเส้น · หมูสับไร้มัน · มะเขือเทศ · หอมใหญ่',
-      tags: ['คลีน', 'แคลอรี่ต่ำ'],
-      protein: 18.0,
-      carbs: 36.0,
-      fat: 7.0,
-    ),
-    RecipeModel(
-      id: 'rec_5',
-      emoji: '🍳',
-      name: 'ไข่กระทะ + ขนมปังโฮลวีต',
-      category: 'อาหารไทย',
-      cookingMinutes: 15,
-      calories: 320,
-      estimatedPrice: 35.0,
-      description: 'ไข่ไก่ 2 ฟอง · ขนมปังโฮลวีต · หมูสับ · มะเขือเทศ',
-      tags: ['มื้อเช้า', 'โปรตีนสูง'],
-      protein: 20.0,
-      carbs: 30.0,
-      fat: 12.0,
-    ),
-    RecipeModel(
-      id: 'rec_6',
-      emoji: '🍗',
-      name: 'ข้าวไก่ย่าง + ส้มตำ',
-      category: 'อาหารไทย',
-      cookingMinutes: 30,
-      calories: 560,
-      estimatedPrice: 65.0,
-      description: 'อกไก่หมักสมุนไพร · มะละกอสด · ข้าวเหนียวกล้อง',
-      tags: ['อาหารไทย', 'โปรตีนสูง'],
-      protein: 35.0,
-      carbs: 68.0,
-      fat: 14.0,
-    ),
-    RecipeModel(
-      id: 'rec_7',
-      emoji: '🍱',
-      name: 'ข้าวเต้าหู้เทอริยากิ',
-      category: 'มังสวิรัติ',
-      cookingMinutes: 22,
-      calories: 430,
-      estimatedPrice: 58.0,
-      description: 'เต้าหู้ขาวแข็ง · ซอสเทอริยากิหวานเค็ม · บรอกโคลี',
-      tags: ['มังสวิรัติ', 'ญี่ปุ่น'],
-      protein: 22.0,
-      carbs: 58.0,
-      fat: 11.0,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  List<RecipeModel> get _filteredRecipes {
-    final query = _searchController.text.trim().toLowerCase();
-    return _catalog.where((recipe) {
-      final matchesCat =
-          _selectedCategory == 'ทั้งหมด' ||
-          recipe.category == _selectedCategory ||
-          recipe.tags.contains(_selectedCategory);
-      final matchesQuery =
-          query.isEmpty ||
-          recipe.name.toLowerCase().contains(query) ||
-          recipe.description.toLowerCase().contains(query);
-      return matchesCat && matchesQuery;
-    }).toList();
+  Future<void> _loadCategories() async {
+    try {
+      final categories = await _recipeService.getCategories();
+      if (!mounted) return;
+      setState(() {
+        _categories
+          ..clear()
+          ..addAll(categories);
+        if (!_categories.contains(_selectedCategory) &&
+            _categories.isNotEmpty) {
+          _selectedCategory = _categories.first;
+        }
+      });
+    } catch (_) {
+      if (mounted && _categories.isEmpty) {
+        setState(() {
+          _categories.addAll(['Chicken', 'Vegetarian', 'Beef', 'Seafood']);
+        });
+      }
+    }
+    await _loadRecipes();
   }
+
+  Future<void> _loadRecipes() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final recipes = await _recipeService.search(
+        query: _searchController.text,
+        category: _selectedCategory,
+      );
+      if (!mounted) return;
+      setState(() => _recipes = recipes);
+    } catch (_) {
+      if (!mounted) return;
+      final q = _searchController.text.trim().toLowerCase();
+      final all = const [
+        RecipeModel(
+          id: 'demo_1',
+          emoji: '🍲',
+          name: 'สุกี้น้ำไก่',
+          category: 'อาหารไทย',
+          cookingMinutes: 15,
+          calories: 360,
+          estimatedPrice: 50.0,
+          description: 'สุกี้น้ำไก่ อุดมด้วยผักสดและโปรตีน',
+        ),
+        RecipeModel(
+          id: 'demo_2',
+          emoji: '🍳',
+          name: 'ข้าวกะเพราเต้าหู้ไข่',
+          category: 'มังสวิรัติ',
+          cookingMinutes: 20,
+          calories: 420,
+          estimatedPrice: 45.0,
+          description: 'กะเพราเต้าหู้ไข่รสแซ่บ',
+        ),
+      ];
+      setState(() {
+        _recipes = q.isEmpty
+            ? all
+            : all.where((r) => r.name.toLowerCase().contains(q)).toList();
+        _error = null;
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _onSearchChanged(String _) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), _loadRecipes);
+  }
+
+  Future<void> _showDetails(RecipeModel recipe) async {
+    final detailsFuture = _recipeService.getDetails(recipe.id);
+    final parentContext = context;
+    final mealProvider = context.read<MealProvider>();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) => FutureBuilder<RecipeModel>(
+        future: detailsFuture,
+        builder: (context, snapshot) {
+          final details = snapshot.data ?? recipe;
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+              child: SizedBox(
+                height: MediaQuery.sizeOf(context).height * 0.82,
+                child: snapshot.connectionState != ConnectionState.done
+                    ? const Center(child: CircularProgressIndicator())
+                    : snapshot.hasError
+                    ? const Center(child: Text('โหลดรายละเอียดเมนูไม่สำเร็จ'))
+                    : Column(
+                        children: [
+                          Expanded(
+                            child: ListView(
+                              padding: EdgeInsets.zero,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.network(
+                                    details.imageUrl,
+                                    height: 220,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const SizedBox(
+                                              height: 100,
+                                              child: Icon(
+                                                Icons.restaurant,
+                                                size: 48,
+                                              ),
+                                            ),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  details.name,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  [
+                                    details.category,
+                                    details.area,
+                                  ].where((v) => v.isNotEmpty).join(' · '),
+                                ),
+                                const SizedBox(height: 16),
+                                _nutritionCard(details),
+                                const SizedBox(height: 18),
+                                Text(
+                                  'วัตถุดิบ',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 6),
+                                ...details.ingredients.map(
+                                  (item) => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 3,
+                                    ),
+                                    child: Text(
+                                      '• ${item['name']} ${item['measure']}'
+                                          .trim(),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                Text(
+                                  'วิธีทำ',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(details.instructions),
+                                if (details.sourceUrl.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  SelectableText('ที่มา: ${details.sourceUrl}'),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.of(sheetContext).pop();
+                                AddToPlanDialog.show(
+                                  parentContext,
+                                  recipeName: details.name,
+                                  emoji: details.emoji,
+                                  imageUrl: details.imageUrl,
+                                  price: details.estimatedPrice > 0
+                                      ? details.estimatedPrice
+                                      : 50,
+                                  calories: details.calories > 0
+                                      ? details.calories
+                                      : null,
+                                  protein: details.protein > 0
+                                      ? details.protein
+                                      : null,
+                                  carbs: details.carbs > 0
+                                      ? details.carbs
+                                      : null,
+                                  fat: details.fat > 0 ? details.fat : null,
+                                  mealProvider: mealProvider,
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.add_circle_outline_rounded,
+                              ),
+                              label: const Text('เพิ่มเมนูไปที่แผนมื้ออาหาร'),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(50),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _addRecipeToPlan(RecipeModel recipe) async {
+    var details = recipe;
+    try {
+      details = await _recipeService.getDetails(recipe.id);
+    } catch (_) {
+      // The recipe list still contains enough information to schedule it.
+    }
+    if (!mounted) return;
+    await AddToPlanDialog.show(
+      context,
+      recipeName: details.name,
+      emoji: details.emoji,
+      imageUrl: details.imageUrl,
+      price: details.estimatedPrice > 0 ? details.estimatedPrice : 50,
+      calories: details.calories > 0 ? details.calories : null,
+      protein: details.protein > 0 ? details.protein : null,
+      carbs: details.carbs > 0 ? details.carbs : null,
+      fat: details.fat > 0 ? details.fat : null,
+      mealProvider: context.read<MealProvider>(),
+    );
+  }
+
+  Widget _nutritionCard(RecipeModel recipe) {
+    final hasNutrition =
+        recipe.calories > 0 ||
+        recipe.protein > 0 ||
+        recipe.carbs > 0 ||
+        recipe.fat > 0;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F1ED),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'แคลอรีและโภชนาการ',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _nutritionValue(
+                'พลังงาน',
+                recipe.calories > 0 ? '${recipe.calories} kcal' : '—',
+              ),
+              _nutritionValue(
+                'โปรตีน',
+                recipe.protein > 0
+                    ? '${recipe.protein.toStringAsFixed(0)} g'
+                    : '—',
+              ),
+              _nutritionValue(
+                'คาร์บ',
+                recipe.carbs > 0 ? '${recipe.carbs.toStringAsFixed(0)} g' : '—',
+              ),
+              _nutritionValue(
+                'ไขมัน',
+                recipe.fat > 0 ? '${recipe.fat.toStringAsFixed(0)} g' : '—',
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            hasNutrition && recipe.nutritionIsEstimated
+                ? 'โภชนาการเป็นค่าประมาณจาก AI ต่อหนึ่งที่ อาจคลาดเคลื่อน'
+                : hasNutrition
+                ? 'ข้อมูลโภชนาการจากรายละเอียดเมนู'
+                : 'TheMealDB ไม่ได้ให้ข้อมูลโภชนาการของเมนูนี้ จึงแสดงเป็น —',
+            style: const TextStyle(color: AppColors.muted, fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _nutritionValue(String label, String value) => Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.muted, fontSize: 10),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    final mealProvider = context.read<MealProvider>();
-    final recipes = _filteredRecipes;
-
     return Scaffold(
       backgroundColor: AppColors.paper,
-      appBar: AppBar(title: const Text('ค้นหาเมนู')),
-      body: Column(
-        children: [
-          // Search & Filter Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search Input Field
-                TextField(
+      body: SafeArea(
+        child: FadeSlideIn(
+          child: Column(
+            children: [
+              PromkinHeader(
+                onTune: () => FocusScope.of(context).requestFocus(FocusNode()),
+                onProfile: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ค้นหาเมนู',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'เลือกเมนูที่เข้ากับงบและความชอบ',
+                            style: TextStyle(
+                              color: AppColors.muted,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '${_recipes.length} เมนูแนะนำ',
+                      style: const TextStyle(
+                        color: AppColors.muted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: TextField(
                   controller: _searchController,
-                  onChanged: (_) => setState(() {}),
+                  onChanged: _onSearchChanged,
                   decoration: InputDecoration(
-                    hintText: 'ค้นหาชื่อเมนูหรือวัตถุดิบ...',
-                    hintStyle: const TextStyle(
-                      color: AppColors.muted,
-                      fontSize: 14,
+                    hintText: 'ค้นหาเมนูหรือวัตถุดิบ...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        _loadRecipes();
+                      },
                     ),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.muted,
-                    ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, size: 18),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {});
-                            },
-                          )
-                        : null,
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                // Category Chips
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: _categories.map((cat) {
-                      final isSelected = _selectedCategory == cat;
+              ),
+              if (_categories.isNotEmpty)
+                SizedBox(
+                  height: 52,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    children: _categories.map((category) {
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: ChoiceChip(
-                          label: Text(cat),
-                          selected: isSelected,
-                          selectedColor: AppColors.primaryContainer,
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.ink,
-                          ),
-                          onSelected: (val) {
-                            if (val) setState(() => _selectedCategory = cat);
+                          label: Text(_categoryLabel(category)),
+                          selected: _selectedCategory == category,
+                          onSelected: (selected) {
+                            if (!selected) return;
+                            setState(() => _selectedCategory = category);
+                            _loadRecipes();
                           },
                         ),
                       );
                     }).toList(),
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          // Recipe Results List
-          Expanded(
-            child: recipes.isEmpty
-                ? const Center(
-                    child: Text(
-                      'ไม่พบเมนูที่ตรงกับคำค้นหา',
-                      style: TextStyle(color: AppColors.muted),
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    itemCount: recipes.length,
-                    itemBuilder: (ctx, index) {
-                      final item = recipes[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF6EDDF),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  item.emoji,
-                                  style: const TextStyle(fontSize: 24),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '${item.category} · ${item.cookingMinutes} นาที · ${item.calories} kcal',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.muted,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'ประมาณ ฿${item.estimatedPrice.toStringAsFixed(0)}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 8,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                onPressed: () {
-                                  AddToPlanDialog.show(
-                                    context,
-                                    recipeName: item.name,
-                                    emoji: item.emoji,
-                                    price: item.estimatedPrice,
-                                    calories: item.calories,
-                                    protein: item.protein,
-                                    carbs: item.carbs,
-                                    fat: item.fat,
-                                    mealProvider: mealProvider,
-                                  );
-                                },
-                                child: const Text(
-                                  '+ เพิ่ม',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
+              Expanded(
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_error!, textAlign: TextAlign.center),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: _loadRecipes,
+                              child: const Text('ลองอีกครั้ง'),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      )
+                    : _recipes.isEmpty
+                    ? const Center(
+                        child: Text('ไม่พบเมนู ลองค้นหาด้วยชื่อภาษาอังกฤษ'),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _recipes.length,
+                        itemBuilder: (context, index) {
+                          final recipe = _recipes[index];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(11),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.ink.withAlpha(8),
+                                  blurRadius: 13,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: InkWell(
+                              onTap: () => _showDetails(recipe),
+                              borderRadius: BorderRadius.circular(15),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Image.network(
+                                      recipe.imageUrl,
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                                width: 80,
+                                                height: 80,
+                                                color:
+                                                    AppColors.primaryContainer,
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  recipe.emoji,
+                                                  style: const TextStyle(
+                                                    fontSize: 34,
+                                                  ),
+                                                ),
+                                              ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: _tag(
+                                            _categoryLabel(recipe.category),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          recipe.name,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          [recipe.area, recipe.category]
+                                              .where((v) => v.isNotEmpty)
+                                              .join(' · '),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: AppColors.muted,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 7),
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.schedule,
+                                              size: 14,
+                                              color: AppColors.muted,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              recipe.cookingMinutes > 0
+                                                  ? '${recipe.cookingMinutes} นาที'
+                                                  : 'ดูวิธีทำ',
+                                              style: const TextStyle(
+                                                color: AppColors.muted,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            IconButton.filledTonal(
+                                              tooltip:
+                                                  'เพิ่มเมนูไปที่แผนมื้ออาหาร',
+                                              onPressed: () =>
+                                                  _addRecipeToPlan(recipe),
+                                              icon: const Icon(
+                                                Icons.add_rounded,
+                                              ),
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              style: IconButton.styleFrom(
+                                                backgroundColor: AppColors
+                                                    .secondaryContainer,
+                                                foregroundColor:
+                                                    AppColors.primary,
+                                                fixedSize: const Size(36, 36),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Recipes and images provided by TheMealDB',
+                  style: TextStyle(fontSize: 11, color: AppColors.muted),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
+
+  String _categoryLabel(String category) => switch (category.toLowerCase()) {
+    'chicken' => 'ไก่',
+    'beef' => 'เนื้อวัว',
+    'seafood' => 'อาหารทะเล',
+    'vegetarian' => 'มังสวิรัติ',
+    'dessert' => 'ของหวาน',
+    'pasta' => 'พาสต้า',
+    'side' => 'เครื่องเคียง',
+    'starter' => 'เรียกน้ำย่อย',
+    'vegan' => 'วีแกน',
+    'breakfast' => 'อาหารเช้า',
+    'miscellaneous' => 'อื่น ๆ',
+    _ => category,
+  };
+
+  Widget _tag(String text) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: const Color(0xFFE3EEE2),
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.primary,
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  );
 }

@@ -21,7 +21,8 @@ cp .env.example .env
 ```env
 PORT=5000
 NODE_ENV=development
-GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-6-luna
 ```
 
 ### 3. เริ่มต้น Server

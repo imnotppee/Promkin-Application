@@ -16,6 +16,11 @@ void main() {
   testWidgets(
     'SettingsScreen renders profile, budget, and preference toggles',
     (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       final settingsProvider = SettingsProvider();
       final authProvider = AuthProvider();
 
@@ -33,29 +38,23 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('ตั้งค่าระบบ & งบประมาณ'), findsOneWidget);
-      expect(find.text('คุณพิมพ์ชนก'), findsOneWidget);
-      expect(find.text('งบประมาณต่อเดือน'), findsOneWidget);
-      expect(find.text('เป้าหมายแคลอรีต่อวัน'), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('Promkin User'), findsWidgets);
 
-      final darkTile = find.widgetWithText(
-        SwitchListTile,
-        'โหมดมืด (Dark Mode)',
-      );
-      await tester.dragUntilVisible(
-        darkTile,
-        find.byType(ListView),
-        const Offset(0, -300),
-      );
+      // Toggle dark mode
+      final darkField = find.text('ตามอุปกรณ์ (System default)');
+      expect(darkField, findsOneWidget);
+      await tester.tap(darkField);
       await tester.pumpAndSettle();
-
-      await tester.tap(darkTile);
-      await tester.pumpAndSettle();
-
       expect(settingsProvider.isDarkMode, isTrue);
 
-      // Tap account circle to navigate to ProfileScreen
-      await tester.tap(find.byIcon(Icons.account_circle));
+      // Switch tab to meal settings
+      await tester.tap(find.text('⚒  แผนอาหาร'));
+      await tester.pumpAndSettle();
+      expect(find.text('งบประมาณรายวัน'), findsOneWidget);
+
+      // Tap profile icon to navigate to ProfileScreen
+      await tester.tap(find.byIcon(Icons.person_outline));
       await tester.pumpAndSettle();
       expect(find.text('โปรไฟล์ผู้ใช้'), findsOneWidget);
     },

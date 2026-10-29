@@ -41,9 +41,10 @@ class DatabaseHelper {
         date TEXT NOT NULL,
         isCompleted INTEGER NOT NULL DEFAULT 0,
         notes TEXT,
-        emoji TEXT DEFAULT '🍛',
-        time TEXT DEFAULT '12:00',
-        tags TEXT DEFAULT ''
+        emoji TEXT NOT NULL DEFAULT '🍽️',
+        time TEXT NOT NULL DEFAULT '12:00',
+        tags TEXT NOT NULL DEFAULT '',
+        imageUrl TEXT NOT NULL DEFAULT ''
       )
     ''');
   }
@@ -52,16 +53,25 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       try {
         await db.execute(
-          "ALTER TABLE meals ADD COLUMN emoji TEXT DEFAULT '🍛'",
+          "ALTER TABLE meals ADD COLUMN emoji TEXT NOT NULL DEFAULT '🍽️'",
         );
       } catch (_) {}
       try {
         await db.execute(
-          "ALTER TABLE meals ADD COLUMN time TEXT DEFAULT '12:00'",
+          "ALTER TABLE meals ADD COLUMN time TEXT NOT NULL DEFAULT '12:00'",
         );
       } catch (_) {}
       try {
-        await db.execute("ALTER TABLE meals ADD COLUMN tags TEXT DEFAULT ''");
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN tags TEXT NOT NULL DEFAULT ''",
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      try {
+        await db.execute(
+          "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
+        );
       } catch (_) {}
     }
   }

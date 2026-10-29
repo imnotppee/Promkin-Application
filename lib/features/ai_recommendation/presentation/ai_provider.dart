@@ -11,6 +11,7 @@ class AiProvider extends ChangeNotifier {
   List<RecommendedMenu> get recommendations => _recommendations;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String get recommendationSource => _aiService.lastSource;
 
   AiProvider({AiService? aiService}) : _aiService = aiService ?? AiService();
 
@@ -19,6 +20,8 @@ class AiProvider extends ChangeNotifier {
     required int targetCalories,
     required int mealCount,
     List<String> dislikedIngredients = const [],
+    String goal = 'balanced',
+    List<String> cuisines = const [],
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -30,6 +33,8 @@ class AiProvider extends ChangeNotifier {
         targetCalories: targetCalories,
         mealCount: mealCount,
         dislikedIngredients: dislikedIngredients,
+        goal: goal,
+        cuisines: cuisines,
       );
     } catch (e) {
       _errorMessage = 'เกิดข้อผิดพลาดในการขอคำแนะนำจาก AI: $e';

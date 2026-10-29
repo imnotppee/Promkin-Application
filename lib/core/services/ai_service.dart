@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:promkin_app/features/ai_recommendation/data/ai_recommendation_model.dart';
+import 'package:promkin_app/core/network/api_endpoints.dart';
 
 /// AI Service for Promkin Meal Recommendation
 /// Fulfills Course Criterion 3 (AI Feature >= 3 pts)
@@ -8,6 +9,7 @@ import 'package:promkin_app/features/ai_recommendation/data/ai_recommendation_mo
 class AiService {
   final String? apiKey;
   final http.Client _client;
+  String lastSource = 'local-fallback';
 
   AiService({this.apiKey, http.Client? client})
     : _client = client ?? http.Client();
@@ -18,7 +20,44 @@ class AiService {
     required int targetCalories,
     required int mealCount,
     List<String> dislikedIngredients = const [],
+    String goal = 'balanced',
+    List<String> cuisines = const [],
   }) async {
+    // Keep Gemini credentials on the backend. The app sends preferences only.
+    try {
+      final response = await _client
+          .post(
+            Uri.parse(ApiEndpoints.aiRecommend),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'budget': budget,
+              'targetCalories': targetCalories,
+              'mealCount': mealCount,
+              'dislikedIngredients': dislikedIngredients,
+              'goal': goal,
+              'cuisines': cuisines,
+            }),
+          )
+          .timeout(const Duration(seconds: 25));
+
+      if (response.statusCode == 200) {
+        final result = jsonDecode(utf8.decode(response.bodyBytes));
+        final data = result['data'];
+        if (result['success'] == true && data is List) {
+          final recommendations = data
+              .whereType<Map<String, dynamic>>()
+              .map(RecommendedMenu.fromJson)
+              .toList();
+          if (recommendations.isNotEmpty) {
+            lastSource = result['source']?.toString() ?? 'backend-ai';
+            return recommendations;
+          }
+        }
+      }
+    } catch (_) {
+      // Continue to the configured direct API or local recommendation fallback.
+    }
+
     // If API key is available, call Gemini API
     if (apiKey != null &&
         apiKey!.isNotEmpty &&
@@ -77,6 +116,7 @@ class AiService {
     }
 
     // Smart Fallback Recommendation engine (ensures app works immediately out of the box)
+    lastSource = 'local-fallback';
     return _generateSmartFallback(
       budget,
       targetCalories,
@@ -96,6 +136,16 @@ class AiService {
         .round();
 
     final allCatalog = [
+      RecommendedMenu(
+        name: 'ไข่ต้มกับข้าวสวย',
+        mealType: 'มื้อเช้า',
+        estimatedPrice: 15.0,
+        calories: 250,
+        protein: 9.0,
+        carbs: 40.0,
+        fat: 6.0,
+        reason: 'เมนูประหยัด ราคาประมาณการขึ้นอยู่กับพื้นที่',
+      ),
       RecommendedMenu(
         name: 'ข้าวอกไก่ย่าง + ไข่ต้ม',
         mealType: 'มื้อเช้า',
@@ -128,6 +178,20 @@ class AiService {
       ),
     ];
 
-    return allCatalog.take(mealCount).toList();
+    var remainingBudget = budget;
+    final recommendations = <RecommendedMenu>[];
+    for (final menu in allCatalog) {
+      if (recommendations.length >= mealCount) break;
+      if (menu.estimatedPrice > remainingBudget) continue;
+      if (disliked.any(
+        (ingredient) =>
+            menu.name.toLowerCase().contains(ingredient.toLowerCase()),
+      )) {
+        continue;
+      }
+      recommendations.add(menu);
+      remainingBudget -= menu.estimatedPrice;
+    }
+    return recommendations;
   }
 }

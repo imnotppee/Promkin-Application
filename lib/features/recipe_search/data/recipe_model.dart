@@ -7,10 +7,16 @@ class RecipeModel {
   final int calories;
   final double estimatedPrice;
   final String description;
+  final String imageUrl;
+  final String area;
+  final String sourceUrl;
+  final List<Map<String, String>> ingredients;
+  final String instructions;
   final List<String> tags;
   final double protein;
   final double carbs;
   final double fat;
+  final bool nutritionIsEstimated;
 
   const RecipeModel({
     required this.id,
@@ -21,10 +27,16 @@ class RecipeModel {
     required this.calories,
     required this.estimatedPrice,
     required this.description,
+    this.imageUrl = '',
+    this.area = '',
+    this.sourceUrl = '',
+    this.ingredients = const [],
+    this.instructions = '',
     this.tags = const [],
     this.protein = 0.0,
     this.carbs = 0.0,
     this.fat = 0.0,
+    this.nutritionIsEstimated = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -37,10 +49,16 @@ class RecipeModel {
       'calories': calories,
       'estimatedPrice': estimatedPrice,
       'description': description,
+      'imageUrl': imageUrl,
+      'area': area,
+      'sourceUrl': sourceUrl,
+      'ingredients': ingredients,
+      'instructions': instructions,
       'tags': tags,
       'protein': protein,
       'carbs': carbs,
       'fat': fat,
+      'nutritionIsEstimated': nutritionIsEstimated,
     };
   }
 
@@ -54,10 +72,25 @@ class RecipeModel {
       calories: (map['calories'] as num?)?.toInt() ?? 350,
       estimatedPrice: (map['estimatedPrice'] as num?)?.toDouble() ?? 50.0,
       description: map['description'] ?? '',
+      imageUrl: map['imageUrl'] ?? '',
+      area: map['area'] ?? '',
+      sourceUrl: map['sourceUrl'] ?? '',
+      ingredients:
+          (map['ingredients'] as List?)
+              ?.whereType<Map>()
+              .map(
+                (item) => item.map(
+                  (key, value) => MapEntry(key.toString(), value.toString()),
+                ),
+              )
+              .toList() ??
+          [],
+      instructions: map['instructions'] ?? map['description'] ?? '',
       tags: (map['tags'] as List?)?.map((e) => e.toString()).toList() ?? [],
       protein: (map['protein'] as num?)?.toDouble() ?? 0.0,
       carbs: (map['carbs'] as num?)?.toDouble() ?? 0.0,
       fat: (map['fat'] as num?)?.toDouble() ?? 0.0,
+      nutritionIsEstimated: map['nutritionIsEstimated'] as bool? ?? false,
     );
   }
 }

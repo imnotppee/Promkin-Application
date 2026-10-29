@@ -19,12 +19,10 @@ class ProfileScreen extends StatelessWidget {
         child: user == null
             ? Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  },
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  ),
                   child: const Text('ไปที่หน้าเข้าสู่ระบบ'),
                 ),
               )

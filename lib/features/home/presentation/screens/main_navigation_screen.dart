@@ -37,33 +37,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       body: IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.paper,
           border: Border(top: BorderSide(color: AppColors.line)),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(
                   index: 0,
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
+                  icon: Icons.dashboard_outlined,
+                  selectedIcon: Icons.dashboard_rounded,
                   label: AppStrings.navHome,
                 ),
                 _buildNavItem(
                   index: 1,
-                  icon: Icons.grid_view_outlined,
-                  selectedIcon: Icons.grid_view,
-                  label: 'วางแผน',
+                  icon: Icons.calendar_month_outlined,
+                  selectedIcon: Icons.calendar_month_rounded,
+                  label: 'วางแผนมื้อ',
                 ),
                 _buildAiCenterButton(),
                 _buildNavItem(
                   index: 3,
-                  icon: Icons.search,
-                  selectedIcon: Icons.search,
-                  label: 'ค้นหา',
+                  icon: Icons.menu_book_outlined,
+                  selectedIcon: Icons.menu_book_rounded,
+                  label: 'ค้นหาเมนู',
                 ),
                 _buildNavItem(
                   index: 4,
@@ -118,50 +118,46 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _buildAiCenterButton() {
-    final isSelected = _currentIndex == 2;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: InkWell(
         borderRadius: BorderRadius.circular(30),
         onTap: () => _onSelectTab(2),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF2F5037) : AppColors.primary,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withAlpha(80),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(80),
+                    blurRadius: 18,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '✦',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  height: 1.1,
-                ),
+              child: const Icon(
+                Icons.auto_awesome,
+                size: 25,
+                color: AppColors.tertiary,
               ),
-              Text(
-                'AI',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
-                  height: 1.1,
-                ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'AI',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: _currentIndex == 2
+                    ? FontWeight.w700
+                    : FontWeight.w500,
+                color: _currentIndex == 2 ? AppColors.primary : AppColors.muted,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
