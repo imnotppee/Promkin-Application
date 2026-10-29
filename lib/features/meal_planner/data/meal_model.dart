@@ -119,7 +119,7 @@ class MealModel {
 
     return {
       'meal_plan_id': mealPlanId,
-      if (userId != null) 'user_id': userId,
+      'user_id': ?userId,
       'source': source,
       'source_id': sourceId ?? this.sourceId,
       'recipe_name': name,

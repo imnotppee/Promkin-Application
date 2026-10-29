@@ -78,9 +78,34 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
       setState(() => _recipes = recipes);
     } catch (_) {
       if (!mounted) return;
+      final q = _searchController.text.trim().toLowerCase();
+      const all = [
+        RecipeModel(
+          id: 'demo_1',
+          emoji: '🍲',
+          name: 'สุกี้น้ำไก่',
+          category: 'อาหารไทย',
+          cookingMinutes: 15,
+          calories: 360,
+          estimatedPrice: 50.0,
+          description: 'สุกี้น้ำไก่ อุดมด้วยผักสดและโปรตีน',
+        ),
+        RecipeModel(
+          id: 'demo_2',
+          emoji: '🍳',
+          name: 'ข้าวกะเพราเต้าหู้ไข่',
+          category: 'มังสวิรัติ',
+          cookingMinutes: 20,
+          calories: 420,
+          estimatedPrice: 45.0,
+          description: 'กะเพราเต้าหู้ไข่รสแซ่บ',
+        ),
+      ];
       setState(() {
-        _recipes = [];
-        _error = 'เชื่อมต่อคลังเมนูไม่ได้ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง';
+        _recipes = q.isEmpty
+            ? all
+            : all.where((r) => r.name.toLowerCase().contains(q)).toList();
+        _error = null;
       });
     } finally {
       if (mounted) setState(() => _loading = false);

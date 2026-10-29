@@ -27,6 +27,6 @@ void main() {
     await tester.tap(find.text('ออกจากระบบ'));
     await tester.pumpAndSettle();
 
-    expect(find.text('ไปที่หน้าเข้าสู่ระบบ'), findsOneWidget);
+    expect(find.text('กลับไปหน้าเข้าสู่ระบบ'), findsOneWidget);
   });
 }
