@@ -18,6 +18,7 @@ class MealModel {
   final String imageUrl;
   final String source;
   final String? sourceId;
+  final String? userId;
 
   MealModel({
     required this.id,
@@ -37,6 +38,7 @@ class MealModel {
     this.imageUrl = '',
     this.source = 'ai',
     this.sourceId,
+    this.userId,
   });
 
   MealModel copyWith({
@@ -57,6 +59,7 @@ class MealModel {
     String? imageUrl,
     String? source,
     String? sourceId,
+    String? userId,
   }) {
     return MealModel(
       id: id ?? this.id,
@@ -76,6 +79,7 @@ class MealModel {
       imageUrl: imageUrl ?? this.imageUrl,
       source: source ?? this.source,
       sourceId: sourceId ?? this.sourceId,
+      userId: userId ?? this.userId,
     );
   }
 
@@ -100,12 +104,14 @@ class MealModel {
       'imageUrl': imageUrl,
       'source': source,
       'sourceId': sourceId,
+      'userId': userId,
     };
   }
 
   /// Convert to Cloud Firestore format.
   Map<String, dynamic> toFirestoreMap({
     required String mealPlanId,
+    String? userId,
     required String source,
     String? sourceId,
   }) {
@@ -113,6 +119,7 @@ class MealModel {
 
     return {
       'meal_plan_id': mealPlanId,
+      'user_id': ?userId,
       'source': source,
       'source_id': sourceId ?? this.sourceId,
       'recipe_name': name,
@@ -192,6 +199,7 @@ class MealModel {
       imageUrl: map['imageUrl']?.toString() ?? '',
       source: map['source']?.toString() ?? 'ai',
       sourceId: map['sourceId']?.toString(),
+      userId: map['userId']?.toString(),
     );
   }
 }

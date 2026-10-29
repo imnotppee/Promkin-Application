@@ -44,7 +44,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final screens = <Widget>[
       DashboardScreen(onNavigateToTab: _onSelectTab),
-      const WeeklyPlannerScreen(),
+      WeeklyPlannerScreen(onNavigateToTab: _onSelectTab),
       const AiRecommendationScreen(),
       const RecipeSearchScreen(),
       const SettingsScreen(),
@@ -57,44 +57,58 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: tabChildren),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.paper,
-          border: Border(top: BorderSide(color: AppColors.line)),
+      body: LayoutBuilder(
+        builder: (context, constraints) => Center(
+          child: SizedBox(
+            width: constraints.maxWidth.clamp(0.0, 620.0).toDouble(),
+            height: constraints.maxHeight,
+            child: IndexedStack(index: _currentIndex, children: tabChildren),
+          ),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  index: 0,
-                  icon: Icons.dashboard_outlined,
-                  selectedIcon: Icons.dashboard_rounded,
-                  label: AppStrings.navHome,
+      ),
+      bottomNavigationBar: Center(
+        heightFactor: 1,
+        child: SizedBox(
+          width: MediaQuery.sizeOf(context).width.clamp(0.0, 620.0).toDouble(),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.paper,
+              border: Border(top: BorderSide(color: AppColors.line)),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(
+                      index: 0,
+                      icon: Icons.dashboard_outlined,
+                      selectedIcon: Icons.dashboard_rounded,
+                      label: AppStrings.navHome,
+                    ),
+                    _buildNavItem(
+                      index: 1,
+                      icon: Icons.calendar_month_outlined,
+                      selectedIcon: Icons.calendar_month_rounded,
+                      label: 'วางแผนมื้ออาหาร',
+                    ),
+                    _buildAiCenterButton(),
+                    _buildNavItem(
+                      index: 3,
+                      icon: Icons.menu_book_outlined,
+                      selectedIcon: Icons.menu_book_rounded,
+                      label: 'ค้นหาเมนู',
+                    ),
+                    _buildNavItem(
+                      index: 4,
+                      icon: Icons.settings_outlined,
+                      selectedIcon: Icons.settings,
+                      label: AppStrings.navSettings,
+                    ),
+                  ],
                 ),
-                _buildNavItem(
-                  index: 1,
-                  icon: Icons.calendar_month_outlined,
-                  selectedIcon: Icons.calendar_month_rounded,
-                  label: 'วางแผนมื้อ',
-                ),
-                _buildAiCenterButton(),
-                _buildNavItem(
-                  index: 3,
-                  icon: Icons.menu_book_outlined,
-                  selectedIcon: Icons.menu_book_rounded,
-                  label: 'ค้นหาเมนู',
-                ),
-                _buildNavItem(
-                  index: 4,
-                  icon: Icons.settings_outlined,
-                  selectedIcon: Icons.settings,
-                  label: AppStrings.navSettings,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -153,7 +167,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: AppColors.secondary,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -166,7 +180,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               child: const Icon(
                 Icons.auto_awesome,
                 size: 25,
-                color: AppColors.tertiary,
+                color: AppColors.primary,
               ),
             ),
             const SizedBox(height: 2),

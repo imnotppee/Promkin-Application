@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/auth/presentation/screens/forgot_password_screen.dart';
 
 void main() {
@@ -11,7 +13,14 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const MaterialApp(home: ForgotPasswordScreen()));
+    final authProvider = AuthProvider();
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<AuthProvider>.value(
+        value: authProvider,
+        child: const MaterialApp(home: ForgotPasswordScreen()),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Forgot Password'), findsOneWidget);
@@ -21,7 +30,7 @@ void main() {
     // Try submit without entering email (validation error)
     await tester.tap(find.text('ส่งลิงก์รีเซ็ตรหัสผ่าน'));
     await tester.pumpAndSettle();
-    expect(find.text('กรอกอีเมลหรือเบอร์โทรศัพท์ก่อน'), findsOneWidget);
+    expect(find.text('กรอกอีเมลก่อน'), findsOneWidget);
 
     // Enter email and submit
     await tester.enterText(find.byType(TextFormField), 'user@promkin.com');

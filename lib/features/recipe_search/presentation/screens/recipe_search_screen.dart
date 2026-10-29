@@ -79,7 +79,7 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
     } catch (_) {
       if (!mounted) return;
       final q = _searchController.text.trim().toLowerCase();
-      final all = const [
+      const all = [
         RecipeModel(
           id: 'demo_1',
           emoji: '🍲',
@@ -257,25 +257,22 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   }
 
   Future<void> _addRecipeToPlan(RecipeModel recipe) async {
-    var details = recipe;
-    try {
-      details = await _recipeService.getDetails(recipe.id);
-    } catch (_) {
-      // The recipe list still contains enough information to schedule it.
-    }
-    if (!mounted) return;
+    // Open the scheduling form immediately. Fetching full recipe details here
+    // made the plus button appear unresponsive while the backend (and optional
+    // nutrition estimate) was loading. Users can still open the recipe card to
+    // view its full details before adding it.
     await AddToPlanDialog.show(
       context,
-      recipeName: details.name,
-      emoji: details.emoji,
-      imageUrl: details.imageUrl,
+      recipeName: recipe.name,
+      emoji: recipe.emoji,
+      imageUrl: recipe.imageUrl,
       source: 'themealdb',
-      sourceId: details.id,
-      price: details.estimatedPrice,
-      calories: details.calories > 0 ? details.calories : null,
-      protein: details.protein > 0 ? details.protein : null,
-      carbs: details.carbs > 0 ? details.carbs : null,
-      fat: details.fat > 0 ? details.fat : null,
+      sourceId: recipe.id,
+      price: recipe.estimatedPrice,
+      calories: recipe.calories > 0 ? recipe.calories : null,
+      protein: recipe.protein > 0 ? recipe.protein : null,
+      carbs: recipe.carbs > 0 ? recipe.carbs : null,
+      fat: recipe.fat > 0 ? recipe.fat : null,
       mealProvider: context.read<MealProvider>(),
     );
   }

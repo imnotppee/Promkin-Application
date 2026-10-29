@@ -54,13 +54,12 @@ void main() {
       // Check add meal button is present
       expect(find.text('เพิ่มเมนูลงในแผน'), findsOneWidget);
 
-      // Tap on add meal button to open AddMealScreen
+      // Tap on add meal button to open RecipeSearchScreen
       await tester.tap(find.text('เพิ่มเมนูลงในแผน'));
       await tester.pumpAndSettle();
 
-      // Check AddMealScreen
-      expect(find.text('เพิ่มมื้ออาหาร'), findsOneWidget);
-      expect(find.text('ชื่อเมนูอาหาร *'), findsOneWidget);
+      // Check RecipeSearchScreen is opened
+      expect(find.text('ค้นหาเมนู'), findsOneWidget);
     });
   });
 }

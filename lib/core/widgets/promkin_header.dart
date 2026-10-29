@@ -5,12 +5,14 @@ class PromkinHeader extends StatelessWidget {
   final VoidCallback? onTune;
   final VoidCallback? onProfile;
   final bool showTune;
+  final bool showProfile;
 
   const PromkinHeader({
     super.key,
     this.onTune,
     this.onProfile,
     this.showTune = true,
+    this.showProfile = true,
   });
 
   @override
@@ -19,17 +21,13 @@ class PromkinHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.eco_outlined,
-              color: Colors.white,
-              size: 23,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(13),
+            child: Image.asset(
+              'assets/images/promkin_mark.png',
+              width: 44,
+              height: 44,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(width: 10),
@@ -64,17 +62,19 @@ class PromkinHeader extends StatelessWidget {
               ),
               tooltip: 'ตั้งค่า',
             ),
-          const SizedBox(width: 6),
-          IconButton.filled(
-            onPressed: onProfile,
-            icon: const Icon(Icons.person_outline_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              fixedSize: const Size(44, 44),
+          if (showProfile) ...[
+            const SizedBox(width: 6),
+            IconButton.filled(
+              onPressed: onProfile,
+              icon: const Icon(Icons.person_outline_rounded),
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                fixedSize: const Size(44, 44),
+              ),
+              tooltip: 'โปรไฟล์',
             ),
-            tooltip: 'โปรไฟล์',
-          ),
+          ],
         ],
       ),
     );

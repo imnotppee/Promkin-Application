@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
+import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -13,6 +15,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _submitted = false;
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -24,89 +28,97 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: AppColors.paper,
     body: SafeArea(
-      child: FadeSlideIn(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.maybePop(context),
-                      icon: const Icon(Icons.arrow_back),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: FadeSlideIn(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.maybePop(context),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Forgot Password',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
                     ),
-                    const Expanded(
-                      child: Text(
-                        'Forgot Password',
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+                  sliver: SliverList.list(
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 76,
+                          height: 76,
+                          decoration: const BoxDecoration(
+                            color: AppColors.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.lock_reset_rounded,
+                            color: AppColors.primary,
+                            size: 36,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const Text(
+                        'ลืมรหัสผ่าน?',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 24,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
+                      const SizedBox(height: 8),
+                      const Text(
+                        'กรอกอีเมลที่ใช้สมัคร เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้คุณ',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchInCurve: Curves.easeOutCubic,
+                        child: _submitted ? _successCard() : _formCard(),
+                      ),
+                      const SizedBox(height: 23),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () => Navigator.maybePop(context),
+                          icon: const Icon(Icons.arrow_back, size: 16),
+                          label: const Text('กลับไปเข้าสู่ระบบ'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
-              sliver: SliverList.list(
-                children: [
-                  Center(
-                    child: Container(
-                      width: 76,
-                      height: 76,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.lock_reset_rounded,
-                        color: AppColors.primary,
-                        size: 36,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'ลืมรหัสผ่าน?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'ไม่ต้องกังวล กรอกอีเมลหรือเบอร์โทรศัพท์ที่ใช้สมัคร แล้วเราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ให้',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.muted,
-                      fontSize: 13,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    switchInCurve: Curves.easeOutCubic,
-                    child: _submitted ? _successCard() : _formCard(),
-                  ),
-                  const SizedBox(height: 23),
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: () => Navigator.maybePop(context),
-                      icon: const Icon(Icons.arrow_back, size: 16),
-                      label: const Text('กลับไปเข้าสู่ระบบ'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ),
@@ -132,7 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'อีเมล หรือเบอร์โทรศัพท์',
+            'อีเมล',
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           ),
           const SizedBox(height: 8),
@@ -140,19 +152,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
-              hintText: 'name@example.com หรือ 08X-XXX-XXXX',
+              hintText: 'name@example.com',
               prefixIcon: Icon(Icons.mail_outline),
             ),
-            validator: (value) => value == null || value.trim().isEmpty
-                ? 'กรอกอีเมลหรือเบอร์โทรศัพท์ก่อน'
-                : null,
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'กรอกอีเมลก่อน' : null,
           ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage!,
+              style: const TextStyle(color: AppColors.error, fontSize: 12),
+            ),
+          ],
           const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _submit,
-              icon: const Icon(Icons.arrow_forward_rounded),
+              onPressed: _isLoading ? null : _submit,
+              icon: _isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.arrow_forward_rounded),
               label: const Text('ส่งลิงก์รีเซ็ตรหัสผ่าน'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
@@ -219,9 +243,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     ),
   );
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _submitted = true);
-    }
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    final sent = await context.read<AuthProvider>().resetPassword(
+      _emailController.text,
+    );
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      _submitted = sent;
+      if (!sent) {
+        _errorMessage = context.read<AuthProvider>().errorMessage;
+      }
+    });
   }
 }

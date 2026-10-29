@@ -4,15 +4,15 @@ import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/widgets/promkin_header.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
-import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
-import 'package:promkin_app/features/meal_planner/presentation/screens/add_meal_screen.dart';
-import 'package:promkin_app/features/settings_budget/presentation/screens/settings_screen.dart';
+import 'package:promkin_app/features/recipe_search/presentation/screens/recipe_search_screen.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 
 class WeeklyPlannerScreen extends StatefulWidget {
-  const WeeklyPlannerScreen({super.key});
+  final Function(int tabIndex)? onNavigateToTab;
+
+  const WeeklyPlannerScreen({super.key, this.onNavigateToTab});
   @override
   State<WeeklyPlannerScreen> createState() => _WeeklyPlannerScreenState();
 }
@@ -49,16 +49,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: PromkinHeader(
-                  onTune: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                  ),
-                  onProfile: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                  ),
-                ),
+                child: PromkinHeader(showTune: false, showProfile: false),
               ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 26),
@@ -336,12 +327,15 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   void _addMeal() {
-    final provider = context.read<MealProvider>();
-    final selectedDate = provider.selectedDate;
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => AddMealScreen(date: selectedDate)),
-    );
+    final navigateToTab = widget.onNavigateToTab;
+    if (navigateToTab != null) {
+      navigateToTab(3);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const RecipeSearchScreen()),
+      );
+    }
   }
 
   Widget _weekToolbar(DateTime start, DateTime end) => Container(

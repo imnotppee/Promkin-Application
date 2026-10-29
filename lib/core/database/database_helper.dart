@@ -46,7 +46,8 @@ class DatabaseHelper {
         tags TEXT NOT NULL DEFAULT '',
         imageUrl TEXT NOT NULL DEFAULT '',
         source TEXT NOT NULL DEFAULT 'ai',
-        sourceId TEXT
+        sourceId TEXT,
+        userId TEXT
       )
     ''');
   }
@@ -74,6 +75,11 @@ class DatabaseHelper {
       );
       await db.execute('ALTER TABLE meals ADD COLUMN sourceId TEXT');
     }
+    if (oldVersion < 5) {
+      // Scope local meal cache to the signed-in account. Existing unowned rows
+      // stay in the database but are not shown to any signed-in user.
+      await db.execute('ALTER TABLE meals ADD COLUMN userId TEXT');
+    }
   }
 
   Future<int> insertMeal(Map<String, dynamic> row) async {
@@ -85,19 +91,29 @@ class DatabaseHelper {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getMealsByDate(String date) async {
+  Future<List<Map<String, dynamic>>> getMealsByDate(
+    String date,
+    String? userId,
+  ) async {
     final db = await database;
     return await db.query(
       'meals',
-      where: 'date = ?',
-      whereArgs: [date],
+      where: userId == null
+          ? 'date = ? AND userId IS NULL'
+          : 'date = ? AND userId = ?',
+      whereArgs: userId == null ? [date] : [date, userId],
       orderBy: 'time ASC, id ASC',
     );
   }
 
-  Future<List<Map<String, dynamic>>> getAllMeals() async {
+  Future<List<Map<String, dynamic>>> getAllMeals(String? userId) async {
     final db = await database;
-    return await db.query('meals', orderBy: 'date DESC');
+    return await db.query(
+      'meals',
+      where: userId == null ? 'userId IS NULL' : 'userId = ?',
+      whereArgs: userId == null ? null : [userId],
+      orderBy: 'date DESC',
+    );
   }
 
   Future<int> updateMeal(Map<String, dynamic> row) async {
