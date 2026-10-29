@@ -189,6 +189,23 @@ class FirebaseService {
   // User profile
   // ------------------------------------------------------------
 
+  /// Read a user profile from the "users" collection.
+  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
+    _checkInitialized();
+
+    if (userId.trim().isEmpty) {
+      throw ArgumentError('User ID must not be empty.');
+    }
+
+    final snapshot = await _firestore.collection('users').doc(userId).get();
+
+    if (!snapshot.exists) {
+      return null;
+    }
+
+    return {'id': snapshot.id, ...snapshot.data()!};
+  }
+
   /// Save or update a user profile in "users".
   Future<Map<String, dynamic>?> syncUserProfile(
     String userId,
@@ -196,6 +213,10 @@ class FirebaseService {
   ) async {
     if (!_isInitialized) {
       return profile;
+    }
+
+    if (userId.trim().isEmpty) {
+      throw ArgumentError('User ID must not be empty.');
     }
 
     await _firestore

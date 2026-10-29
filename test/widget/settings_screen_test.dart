@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:promkin_app/core/database/preferences_helper.dart';
+import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 import 'package:promkin_app/features/settings_budget/presentation/screens/settings_screen.dart';
 
@@ -16,10 +17,16 @@ void main() {
     'SettingsScreen renders profile, budget, and preference toggles',
     (tester) async {
       final settingsProvider = SettingsProvider();
+      final authProvider = AuthProvider();
 
       await tester.pumpWidget(
-        ChangeNotifierProvider<SettingsProvider>.value(
-          value: settingsProvider,
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: settingsProvider,
+            ),
+            ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+          ],
           child: const MaterialApp(home: SettingsScreen()),
         ),
       );
@@ -46,6 +53,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(settingsProvider.isDarkMode, isTrue);
+
+      // Tap account circle to navigate to ProfileScreen
+      await tester.tap(find.byIcon(Icons.account_circle));
+      await tester.pumpAndSettle();
+      expect(find.text('โปรไฟล์ผู้ใช้'), findsOneWidget);
     },
   );
 }

@@ -19,6 +19,17 @@ void main() {
       expect(auth.isLoading, isFalse);
     });
 
+    test('login with empty credentials fails and sets errorMessage', () async {
+      final auth = AuthProvider();
+      final success1 = await auth.login('', '123456');
+      expect(success1, isFalse);
+      expect(auth.errorMessage, isNotNull);
+
+      final success2 = await auth.login('test@test.com', '');
+      expect(success2, isFalse);
+      expect(auth.errorMessage, isNotNull);
+    });
+
     test('logout clears currentUser', () async {
       final auth = AuthProvider();
       await auth.logout();

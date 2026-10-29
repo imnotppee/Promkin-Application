@@ -12,7 +12,7 @@ void main() {
   });
 
   group('WeeklyPlannerScreen Widget Tests', () {
-    testWidgets('renders 7 days list and navigates to day detail', (
+    testWidgets('renders 7 days list and navigates to day detail and back', (
       WidgetTester tester,
     ) async {
       final repo = MealRepository();
@@ -30,6 +30,12 @@ void main() {
       // Check App Bar Title
       expect(find.text('วางแผนมื้ออาหาร'), findsOneWidget);
 
+      // Week navigation buttons
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+
       // Check 'ดูมื้ออาหาร' button is present
       final viewMealsBtns = find.text('ดูมื้ออาหาร');
       expect(viewMealsBtns, findsWidgets);
@@ -41,6 +47,13 @@ void main() {
       // Check Day Detail screen
       expect(find.text('สรุปของวันนี้'), findsOneWidget);
       expect(find.text('＋ เพิ่มเมนูในวันนี้'), findsOneWidget);
+
+      // Navigate back
+      final backButton = find.byType(IconButton).first;
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('วางแผนมื้ออาหาร'), findsOneWidget);
     });
   });
 }
