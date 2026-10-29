@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -66,11 +65,20 @@ class _PromkinAppState extends State<PromkinApp> {
     if (_startupReminderChecked) return;
     _startupReminderChecked = true;
     final settings = context.read<SettingsProvider>();
+
+    // Ask for notification opt-in only once. After the first answer, access is
+    // managed explicitly from Meal plan settings.
+    if (PreferencesHelper.hasHandledNotificationPrompt()) {
+      if (!settings.isMealReminderEnabled) return;
+      final permissionGranted = await NotificationService.instance
+          .areNotificationsEnabled();
+      if (permissionGranted) await settings.refreshMealReminders();
+      return;
+    }
+
     final permissionGranted = await NotificationService.instance
         .areNotificationsEnabled();
 
-    // Ask in-app on every launch. Android versions below 13 do not show a
-    // system notification permission prompt, so this is the visible opt-in.
     if (!context.mounted) return;
     final enable = await showDialog<bool>(
       context: context,
@@ -81,9 +89,9 @@ class _PromkinAppState extends State<PromkinApp> {
         content: Text(
           settings.isMealReminderEnabled
               ? 'การแจ้งเตือนมื้ออาหารเปิดอยู่ ต้องการซิงก์การเตือนของคุณตอนนี้ไหม? '
-                  'ระบบจะขอสิทธิ์ตั้งปลุกเพื่อให้เตือนได้ตรงเวลา'
+                    'ระบบจะขอสิทธิ์ตั้งปลุกเพื่อให้เตือนได้ตรงเวลา'
               : 'ต้องการให้ PromKin เตือนเมื่อถึงเวลามื้ออาหารที่วางแผนไว้ไหม? '
-                  'ระบบจะขอสิทธิ์ตั้งปลุกเพื่อให้เตือนได้ตรงเวลา',
+                    'ระบบจะขอสิทธิ์ตั้งปลุกเพื่อให้เตือนได้ตรงเวลา',
         ),
         actions: [
           TextButton(
@@ -98,66 +106,36 @@ class _PromkinAppState extends State<PromkinApp> {
       ),
     );
     if (!context.mounted) return;
+
+    // Persist either answer before requesting OS access so an app restart or
+    // permission denial cannot make the same question appear again.
+    await PreferencesHelper.setNotificationPromptHandled(true);
+
+    // Wait until the dialog overlay has fully unmounted before a provider
+    // notification rebuilds inherited widgets.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!context.mounted) return;
+
     if (enable != true) {
-      if (settings.isMealReminderEnabled) {
-        await settings.refreshMealReminders();
-      }
+      await settings.disableReminderAfterPermissionDenied();
       return;
     }
-      final allowed = permissionGranted || await NotificationService.instance
-          .requestPermissions();
-      if (!context.mounted) return;
-      if (allowed) {
-        if (settings.isMealReminderEnabled) {
-          await NotificationService.instance.requestExactReminderAccess();
-          await settings.refreshMealReminders();
-        } else {
-          await settings.toggleReminder(true);
-        }
-      } else {
-        await _showNotificationSettingsDialog(context, settings);
-      }
-  }
 
-  Future<void> _showNotificationSettingsDialog(
-    BuildContext context,
-    SettingsProvider settings,
-  ) async {
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        icon: const Icon(Icons.notifications_off_outlined),
-        title: const Text('เปิดการแจ้งเตือน'),
-        content: const Text(
-          'PromKin ยังไม่ได้รับอนุญาตให้ส่งการแจ้งเตือน '
-          'กรุณาอนุญาตในการตั้งค่าอุปกรณ์ แล้วเปิดแจ้งเตือนมื้ออาหารในแอป',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('ไว้ก่อน'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              try {
-                await const MethodChannel('promkin/notifications')
-                    .invokeMethod<void>('openNotificationSettings');
-              } on PlatformException catch (error) {
-                debugPrint('Could not open notification settings: $error');
-              }
-              // If the OS settings page is not needed (e.g. Android 12), enable
-              // reminders directly after the user explicitly opted in.
-              final isAllowed = await NotificationService.instance
-                  .areNotificationsEnabled();
-              if (isAllowed) await settings.toggleReminder(true);
-            },
-            child: const Text('ไปตั้งค่า'),
-          ),
-        ],
-      ),
-    );
+    final allowed =
+        permissionGranted ||
+        await NotificationService.instance.requestPermissions();
+    if (!context.mounted) return;
+    if (!allowed) {
+      await settings.disableReminderAfterPermissionDenied();
+      return;
+    }
+
+    await NotificationService.instance.requestExactReminderAccess();
+    if (settings.isMealReminderEnabled) {
+      await settings.refreshMealReminders();
+    } else {
+      await settings.toggleReminder(true);
+    }
   }
 
   @override
@@ -183,7 +161,7 @@ class _PromkinAppState extends State<PromkinApp> {
             home: Consumer<AuthProvider>(
               builder: (context, auth, _) => auth.isAuthenticated
                   ? const MainNavigationScreen()
-                  : const LoginScreen(),
+                  : const LoginScreen(initialRegister: true),
             ),
           );
         },

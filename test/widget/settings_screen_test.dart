@@ -63,4 +63,40 @@ void main() {
       expect(find.text('โปรไฟล์ผู้ใช้'), findsOneWidget);
     },
   );
+
+  testWidgets('saving a numeric setting closes its dialog safely', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final settingsProvider = SettingsProvider();
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<SettingsProvider>.value(
+            value: settingsProvider,
+          ),
+          ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ],
+        child: const MaterialApp(home: SettingsScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('แผนอาหาร'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('งบประมาณรายวัน'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField), '250');
+    await tester.tap(find.text('บันทึก'));
+    await tester.pumpAndSettle();
+
+    expect(settingsProvider.dailyBudget, 250);
+    expect(find.text('บันทึกค่าเรียบร้อย'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

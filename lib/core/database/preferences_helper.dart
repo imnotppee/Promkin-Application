@@ -73,10 +73,22 @@ class PreferencesHelper {
 
   // Reminder
   static bool isReminderEnabled() {
-    return _prefs?.getBool(AppConstants.keyMealReminder) ?? true;
+    return _prefs?.getBool(AppConstants.keyMealReminder) ?? false;
   }
 
   static Future<bool> setReminderEnabled(bool value) async {
     return await _prefs?.setBool(AppConstants.keyMealReminder, value) ?? false;
+  }
+
+  static bool hasHandledNotificationPrompt() {
+    return _prefs?.getBool(AppConstants.keyNotificationPromptHandled) ?? false;
+  }
+
+  static Future<bool> setNotificationPromptHandled(bool value) async {
+    return await _prefs?.setBool(
+          AppConstants.keyNotificationPromptHandled,
+          value,
+        ) ??
+        false;
   }
 }

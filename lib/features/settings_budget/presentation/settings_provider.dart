@@ -11,7 +11,7 @@ class SettingsProvider extends ChangeNotifier {
   double _monthlyBudget = 3800.0;
   int _dailyCalories = AppConstants.defaultDailyCalories;
   int _mealsPerDay = AppConstants.defaultMealsPerDay;
-  bool _isMealReminderEnabled = true;
+  bool _isMealReminderEnabled = false;
   ThemeMode _themeMode = ThemeMode.system;
   final List<String> _dislikedIngredients = ['ถั่วลิสง'];
   final List<String> _favoriteCuisines = ['อาหารไทย', 'มังสวิรัติ'];

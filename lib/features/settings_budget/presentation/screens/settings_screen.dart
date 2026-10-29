@@ -459,15 +459,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String suffix,
     bool allowDecimal = false,
   }) async {
-    final controller = TextEditingController(text: initial);
+    var inputValue = initial;
     String? validationError;
     final valueToSave = await showDialog<String>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
           title: Text(title),
-          content: TextField(
-            controller: controller,
+          content: TextFormField(
+            initialValue: initial,
             keyboardType: TextInputType.numberWithOptions(
               decimal: allowDecimal,
             ),
@@ -480,7 +480,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               suffixText: suffix,
               errorText: validationError,
             ),
-            onChanged: (_) {
+            onChanged: (value) {
+              inputValue = value;
               if (validationError != null) {
                 setDialogState(() => validationError = null);
               }
@@ -492,8 +493,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: const Text('ยกเลิก'),
             ),
             ElevatedButton(
-              onPressed: () async {
-                final value = controller.text.trim();
+              onPressed: () {
+                final value = inputValue.trim();
                 final parsed = allowDecimal
                     ? double.tryParse(value)
                     : int.tryParse(value)?.toDouble();
@@ -513,7 +514,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
-    controller.dispose();
 
     // Persist after the dialog route has fully closed. Updating SettingsProvider
     // while the dialog is still in the Navigator overlay can deactivate an

@@ -142,8 +142,8 @@ Return realistic Thai meal prices and nutrition estimates. Put a concise Thai ex
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: process.env.OPENAI_MODEL || 'gpt-6-luna',
-          reasoning: { effort: 'none' },
+          model: process.env.OPENAI_MODEL || 'gpt-5-mini',
+          reasoning: { effort: 'minimal' },
           max_output_tokens: 1600,
           input: [
             {
@@ -166,7 +166,7 @@ Return realistic Thai meal prices and nutrition estimates. Put a concise Thai ex
         }),
         // Prevent the app from remaining in its loading state indefinitely if
         // the upstream AI service or the PC's internet connection is stalled.
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(45000),
       });
 
       if (response.ok) {
@@ -196,7 +196,7 @@ Return realistic Thai meal prices and nutrition estimates. Put a concise Thai ex
             if (budgetSafeMeals.length > 0) {
               return res.json({
                 success: true,
-                source: `openai-${process.env.OPENAI_MODEL || 'gpt-6-luna'}`,
+                source: `openai-${process.env.OPENAI_MODEL || 'gpt-5-mini'}`,
                 data: budgetSafeMeals,
               });
             }

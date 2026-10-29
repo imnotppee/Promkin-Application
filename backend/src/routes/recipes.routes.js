@@ -90,13 +90,13 @@ router.get('/:id', async (req, res) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: process.env.OPENAI_MODEL || 'gpt-6-luna',
-            reasoning: { effort: 'none' },
+            model: process.env.OPENAI_MODEL || 'gpt-5-mini',
+            reasoning: { effort: 'minimal' },
             max_output_tokens: 250,
             input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
             text: { format: { type: 'json_schema', name: 'recipe_nutrition_estimate', strict: true, schema } },
           }),
-          signal: AbortSignal.timeout(12000),
+          signal: AbortSignal.timeout(45000),
         });
         if (response.ok) {
           const result = await response.json();
@@ -113,6 +113,9 @@ router.get('/:id', async (req, res) => {
               data.nutritionIsEstimated = true;
             }
           }
+        } else {
+          const errorBody = await response.text();
+          console.warn('Could not estimate recipe nutrition:', response.status, errorBody);
         }
       } catch (error) {
         console.warn('Could not estimate recipe nutrition:', error.message);

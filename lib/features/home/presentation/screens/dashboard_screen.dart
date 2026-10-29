@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/widgets/promkin_header.dart';
 import 'package:promkin_app/core/widgets/motion_widgets.dart';
-import 'package:promkin_app/features/auth/presentation/screens/profile_screen.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
 import 'package:promkin_app/features/ai_recommendation/presentation/ai_provider.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
@@ -76,14 +75,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                SliverToBoxAdapter(
-                  child: PromkinHeader(
-                    onTune: () => widget.onNavigateToTab?.call(4),
-                    onProfile: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                    ),
-                  ),
+                const SliverToBoxAdapter(
+                  child: PromkinHeader(showTune: false, showProfile: false),
                 ),
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 2, 16, 28),
