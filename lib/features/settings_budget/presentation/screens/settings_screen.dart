@@ -37,8 +37,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       IconButton(
                         tooltip: 'ย้อนกลับ',
-                        onPressed: widget.onBack ??
-                            () => Navigator.maybePop(context),
+                        onPressed:
+                            widget.onBack ?? () => Navigator.maybePop(context),
                         icon: const Icon(Icons.arrow_back),
                       ),
                       const Expanded(
@@ -403,9 +403,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('แจ้งเตือนมื้ออาหาร'),
             value: settings.isMealReminderEnabled,
             onChanged: (value) async {
+              final messenger = ScaffoldMessenger.of(context);
               final enabled = await settings.toggleReminder(value);
               if (!enabled && mounted) {
-                ScaffoldMessenger.of(context)
+                messenger
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     const SnackBar(
@@ -414,10 +415,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   );
-              } else if (value && mounted &&
+              } else if (value &&
+                  mounted &&
                   !await NotificationService.instance
                       .canScheduleExactReminders()) {
-                ScaffoldMessenger.of(context)
+                if (!mounted) return;
+                messenger
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     const SnackBar(

@@ -41,10 +41,12 @@ void main() {
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('Promkin User'), findsWidgets);
 
-      // Toggle dark mode
-      final darkField = find.text('โหมดสว่าง (Light)');
-      expect(darkField, findsOneWidget);
-      await tester.tap(darkField);
+      // Select dark mode from the theme mode dialog.
+      final themeField = find.text('ตามอุปกรณ์ (System default)');
+      expect(themeField, findsOneWidget);
+      await tester.tap(themeField);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('โหมดมืด (Dark)'));
       await tester.pumpAndSettle();
       expect(settingsProvider.isDarkMode, isTrue);
 

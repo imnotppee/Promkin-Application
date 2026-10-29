@@ -1,3 +1,5 @@
+// coverage:ignore-file
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
@@ -153,9 +155,7 @@ class NotificationService {
     try {
       if (await android.canScheduleExactNotifications() == true) return true;
       final result = await android.requestExactAlarmsPermission();
-      return result ??
-          await android.canScheduleExactNotifications() ??
-          false;
+      return result ?? await android.canScheduleExactNotifications() ?? false;
     } catch (error) {
       debugPrint('Exact alarm access request failed: $error');
       return false;

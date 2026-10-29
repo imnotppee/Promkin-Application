@@ -6,6 +6,7 @@ import 'package:promkin_app/features/meal_planner/data/meal_repository.dart';
 import 'package:promkin_app/features/meal_planner/presentation/meal_provider.dart';
 import 'package:promkin_app/features/settings_budget/presentation/settings_provider.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
+import 'package:promkin_app/features/ai_recommendation/presentation/ai_provider.dart';
 import 'package:promkin_app/features/home/presentation/screens/dashboard_screen.dart';
 
 void main() {
@@ -33,6 +34,7 @@ void main() {
             ChangeNotifierProvider.value(value: mealProv),
             ChangeNotifierProvider.value(value: settingsProv),
             ChangeNotifierProvider.value(value: authProv),
+            ChangeNotifierProvider(create: (_) => AiProvider()),
           ],
           child: const MaterialApp(home: DashboardScreen()),
         ),
@@ -50,7 +52,7 @@ void main() {
 
       // Check Sections
       expect(find.text('ตารางมื้ออาหารวันนี้'), findsOneWidget);
-      expect(find.text('AI แนะนำเมนู'), findsOneWidget);
+      expect(find.text('AI แนะนำเมนูวันนี้'), findsOneWidget);
 
       // Week day selector navigation using chevron buttons
       await tester.tap(find.byIcon(Icons.chevron_left_rounded));
