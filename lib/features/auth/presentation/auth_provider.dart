@@ -44,6 +44,30 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> createAccount(String name, String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await Future.delayed(const Duration(milliseconds: 400));
+      _currentUser = UserModel(
+        id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+        name: name.trim(),
+        email: email.trim(),
+      );
+      await FirebaseService.instance.syncUserProfile(
+        _currentUser!.id,
+        _currentUser!.toJson(),
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (_) {
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     _currentUser = null;
     notifyListeners();

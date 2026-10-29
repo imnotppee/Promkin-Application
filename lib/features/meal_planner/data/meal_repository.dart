@@ -25,6 +25,20 @@ class MealRepository {
     return _memoryStore.where((m) => m.date == date).toList();
   }
 
+  Future<List<MealModel>> getAllMeals() async {
+    final byId = {for (final meal in _memoryStore) meal.id: meal};
+    try {
+      final dbData = await _dbHelper.getAllMeals();
+      for (final row in dbData) {
+        final meal = MealModel.fromMap(row);
+        byId[meal.id] = meal;
+      }
+    } catch (_) {
+      // Keep the in-memory list available when the platform has no SQLite.
+    }
+    return List<MealModel>.unmodifiable(byId.values);
+  }
+
   Future<void> saveMeal(MealModel meal) async {
     // 1. Save to memory cache
     _memoryStore.removeWhere((m) => m.id == meal.id);

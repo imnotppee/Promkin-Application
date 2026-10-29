@@ -13,6 +13,7 @@ class MealModel {
   final String emoji;
   final String time;
   final List<String> tags;
+  final String imageUrl;
 
   MealModel({
     required this.id,
@@ -29,6 +30,7 @@ class MealModel {
     this.emoji = '🍛',
     this.time = '12:00',
     this.tags = const [],
+    this.imageUrl = '',
   });
 
   MealModel copyWith({
@@ -46,6 +48,7 @@ class MealModel {
     String? emoji,
     String? time,
     List<String>? tags,
+    String? imageUrl,
   }) {
     return MealModel(
       id: id ?? this.id,
@@ -62,6 +65,7 @@ class MealModel {
       emoji: emoji ?? this.emoji,
       time: time ?? this.time,
       tags: tags ?? this.tags,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 
@@ -81,6 +85,7 @@ class MealModel {
       'emoji': emoji,
       'time': time,
       'tags': tags.join(','),
+      'imageUrl': imageUrl,
     };
   }
 
@@ -117,6 +122,7 @@ class MealModel {
       emoji: map['emoji'] ?? '🍛',
       time: map['time'] ?? '12:00',
       tags: parsedTags,
+      imageUrl: map['imageUrl']?.toString() ?? '',
     );
   }
 }

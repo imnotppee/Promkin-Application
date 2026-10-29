@@ -22,6 +22,7 @@ class DatabaseHelper {
       path,
       version: AppConstants.databaseVersion,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -39,9 +40,32 @@ class DatabaseHelper {
         fat REAL NOT NULL,
         date TEXT NOT NULL,
         isCompleted INTEGER NOT NULL DEFAULT 0,
-        notes TEXT
+        notes TEXT,
+        emoji TEXT NOT NULL DEFAULT '🍽️',
+        time TEXT NOT NULL DEFAULT '12:00',
+        tags TEXT NOT NULL DEFAULT '',
+        imageUrl TEXT NOT NULL DEFAULT ''
       )
     ''');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN emoji TEXT NOT NULL DEFAULT '🍽️'",
+      );
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN time TEXT NOT NULL DEFAULT '12:00'",
+      );
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN tags TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        "ALTER TABLE meals ADD COLUMN imageUrl TEXT NOT NULL DEFAULT ''",
+      );
+    }
   }
 
   Future<int> insertMeal(Map<String, dynamic> row) async {

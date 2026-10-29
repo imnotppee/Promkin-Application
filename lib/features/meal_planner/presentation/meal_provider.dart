@@ -7,10 +7,12 @@ class MealProvider extends ChangeNotifier {
   final MealRepository _repository;
   DateTime _selectedDate = DateTime.now();
   List<MealModel> _meals = [];
+  List<MealModel> _allMeals = [];
   bool _isLoading = false;
 
   DateTime get selectedDate => _selectedDate;
   List<MealModel> get meals => _meals;
+  List<MealModel> get allMeals => _allMeals;
   bool get isLoading => _isLoading;
 
   MealProvider({MealRepository? repository, bool initDemoMeals = true})
@@ -18,7 +20,13 @@ class MealProvider extends ChangeNotifier {
     if (initDemoMeals) {
       _initDefaultMeals();
     }
+    loadAllMeals();
     loadMealsForDate(_selectedDate);
+  }
+
+  Future<void> loadAllMeals() async {
+    _allMeals = await _repository.getAllMeals();
+    notifyListeners();
   }
 
   void _initDefaultMeals() {
@@ -254,17 +262,20 @@ class MealProvider extends ChangeNotifier {
 
   Future<void> addMeal(MealModel meal) async {
     await _repository.saveMeal(meal);
+    await loadAllMeals();
     await loadMealsForDate(_selectedDate);
   }
 
   Future<void> removeMeal(String id) async {
     await _repository.deleteMeal(id);
+    await loadAllMeals();
     await loadMealsForDate(_selectedDate);
   }
 
   Future<void> toggleMealCompletion(MealModel meal) async {
     final updated = meal.copyWith(isCompleted: !meal.isCompleted);
     await _repository.saveMeal(updated);
+    await loadAllMeals();
     await loadMealsForDate(_selectedDate);
   }
 

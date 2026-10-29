@@ -4,6 +4,28 @@ const router = express.Router();
 // Fallback food dataset when calling offline or without Gemini Key
 const foodPool = [
   {
+    name: 'ไข่ต้มกับข้าวสวย',
+    mealType: 'มื้อเช้า',
+    price: 15.0,
+    calories: 250,
+    protein: 9.0,
+    carbs: 40.0,
+    fat: 6.0,
+    reason: 'เมนูประหยัดสำหรับงบจำกัด ราคาประมาณการขึ้นอยู่กับพื้นที่',
+    ingredients: ['ไข่ไก่', 'ข้าวสวย']
+  },
+  {
+    name: 'ข้าวไข่เจียว',
+    mealType: 'มื้อกลางวัน',
+    price: 20.0,
+    calories: 330,
+    protein: 11.0,
+    carbs: 42.0,
+    fat: 12.0,
+    reason: 'เมนูง่าย ๆ ที่เหมาะกับงบจำกัด ราคาประมาณการขึ้นอยู่กับพื้นที่',
+    ingredients: ['ไข่ไก่', 'ข้าวสวย']
+  },
+  {
     name: 'ไข่กระทะ + ขนมปังโฮลวีต',
     mealType: 'มื้อเช้า',
     price: 35.0,
@@ -67,8 +89,124 @@ router.post('/recommend', async (req, res) => {
     targetCalories = 2000,
     mealCount = 3,
     dislikedIngredients = ['ถั่วลิสง'],
-    goal = 'สมดุล'
+    goal = 'สมดุล',
+    cuisines = []
   } = req.body;
+
+  const openAiKey = process.env.OPENAI_API_KEY;
+  if (openAiKey) {
+    try {
+      const mealSchema = {
+        type: 'object',
+        properties: {
+          meals: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                mealType: {
+                  type: 'string',
+                  enum: ['มื้อเช้า', 'มื้อกลางวัน', 'มื้อเย็น'],
+                },
+                estimatedPrice: { type: 'number' },
+                calories: { type: 'integer' },
+                protein: { type: 'number' },
+                carbs: { type: 'number' },
+                fat: { type: 'number' },
+                reason: { type: 'string' },
+                ingredients: { type: 'array', items: { type: 'string' } },
+              },
+              required: [
+                'name', 'mealType', 'estimatedPrice', 'calories',
+                'protein', 'carbs', 'fat', 'reason', 'ingredients',
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ['meals'],
+        additionalProperties: false,
+      };
+
+      const prompt = `Create ${mealCount} meal recommendations for one day in Thai.
+Daily budget: ${budget} THB total. Daily calorie target: ${targetCalories} kcal.
+Diet goal: ${goal}. Preferred cuisines: ${Array.isArray(cuisines) ? cuisines.join(', ') : ''}.
+Never include these ingredients: ${Array.isArray(dislikedIngredients) ? dislikedIngredients.join(', ') : ''}.
+The sum of estimatedPrice must be no more than ${budget} THB. If the budget cannot cover ${mealCount} meals, return fewer meals; do not exceed the budget.
+Return realistic Thai meal prices and nutrition estimates. Put a concise Thai explanation in reason.`;
+      const response = await fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openAiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || 'gpt-6-luna',
+          reasoning: { effort: 'none' },
+          max_output_tokens: 1600,
+          input: [
+            {
+              role: 'developer',
+              content: [{
+                type: 'input_text',
+                text: 'You are a meal-planning assistant. Return only valid data matching the requested schema.',
+              }],
+            },
+            { role: 'user', content: [{ type: 'input_text', text: prompt }] },
+          ],
+          text: {
+            format: {
+              type: 'json_schema',
+              name: 'promkin_meal_recommendations',
+              strict: true,
+              schema: mealSchema,
+            },
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const outputText = result.output_text || result.output
+          ?.flatMap((item) => item.content || [])
+          .find((item) => item.type === 'output_text')?.text;
+        if (outputText) {
+          const parsed = JSON.parse(outputText);
+          if (Array.isArray(parsed.meals)) {
+            let remainingBudget = Math.max(0, Number(budget) || 0);
+            const excluded = Array.isArray(dislikedIngredients)
+              ? dislikedIngredients.map((item) => String(item).toLocaleLowerCase())
+              : [];
+            const budgetSafeMeals = parsed.meals
+              .filter((meal) => meal && Number.isFinite(Number(meal.estimatedPrice)) && Number(meal.estimatedPrice) >= 0)
+              .filter((meal) => !Array.isArray(meal.ingredients) || !meal.ingredients.some((ingredient) =>
+                excluded.some((disliked) => String(ingredient).toLocaleLowerCase().includes(disliked))
+              ))
+              .slice(0, Math.max(0, Math.min(6, Number(mealCount) || 0)))
+              .filter((meal) => {
+                const price = Number(meal.estimatedPrice);
+                if (price > remainingBudget) return false;
+                remainingBudget -= price;
+                return true;
+              });
+            if (budgetSafeMeals.length > 0) {
+              return res.json({
+                success: true,
+                source: `openai-${process.env.OPENAI_MODEL || 'gpt-6-luna'}`,
+                data: budgetSafeMeals,
+              });
+            }
+          }
+        }
+      } else {
+        const errorBody = await response.text();
+        console.warn('OpenAI request failed, using fallback recommendations:', response.status, errorBody);
+      }
+    } catch (err) {
+      console.warn('OpenAI request failed, using fallback recommendations:', err.message);
+    }
+  }
 
   const geminiKey = process.env.GEMINI_API_KEY;
 
@@ -82,6 +220,7 @@ router.post('/recommend', async (req, res) => {
 - แคลอรีรวม: ประมาณ ${targetCalories} kcal
 - วัตถุดิบที่ไม่ต้องการ/แพ้: ${dislikedIngredients.join(', ')}
 - เป้าหมาย: ${goal}
+- ประเภทอาหารที่ชอบ: ${Array.isArray(cuisines) ? cuisines.join(', ') : ''}
 ตอบกลับเป็น JSON array ของวัตถุที่มีรูปแบบ:
 [
   {
@@ -98,7 +237,7 @@ router.post('/recommend', async (req, res) => {
 ]`;
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -114,7 +253,9 @@ router.post('/recommend', async (req, res) => {
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) {
           const parsed = JSON.parse(text);
-          return res.json({ success: true, source: 'gemini-1.5-flash', data: parsed });
+          if (Array.isArray(parsed)) {
+            return res.json({ success: true, source: 'gemini-3.6-flash', data: parsed });
+          }
         }
       }
     } catch (err) {
@@ -123,22 +264,32 @@ router.post('/recommend', async (req, res) => {
   }
 
   // Smart Rule-based AI Engine (Filtered by constraints & allergies)
-  const safeItems = foodPool.filter((item) => {
-    return !item.ingredients.some((ing) => dislikedIngredients.includes(ing));
-  });
+  const excluded = Array.isArray(dislikedIngredients)
+    ? dislikedIngredients.map((item) => String(item).toLocaleLowerCase())
+    : [];
+  const safeItems = foodPool.filter((item) => !item.ingredients.some((ingredient) =>
+    excluded.some((disliked) => ingredient.toLocaleLowerCase().includes(disliked))
+  ));
 
-  // Pick up to mealCount items
-  const recommendations = safeItems.slice(0, mealCount).map((item) => ({
-    name: item.name,
-    mealType: item.mealType,
-    estimatedPrice: item.price,
-    calories: item.calories,
-    protein: item.protein,
-    carbs: item.carbs,
-    fat: item.fat,
-    reason: item.reason,
-    ingredients: item.ingredients
-  }));
+  // Keep rule-based recommendations within the user's daily budget.
+  let remainingBudget = Math.max(0, Number(budget) || 0);
+  const recommendations = [];
+  for (const item of safeItems) {
+    if (recommendations.length >= Math.max(0, Math.min(6, Number(mealCount) || 0))) break;
+    if (item.price > remainingBudget) continue;
+    remainingBudget -= item.price;
+    recommendations.push({
+      name: item.name,
+      mealType: item.mealType,
+      estimatedPrice: item.price,
+      calories: item.calories,
+      protein: item.protein,
+      carbs: item.carbs,
+      fat: item.fat,
+      reason: item.reason,
+      ingredients: item.ingredients
+    });
+  }
 
   res.json({
     success: true,
