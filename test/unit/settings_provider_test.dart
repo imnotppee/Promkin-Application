@@ -27,6 +27,21 @@ void main() {
       expect(provider.dailyBudget, 150.0);
     });
 
+    test('should update calories and meals per day correctly', () async {
+      final provider = SettingsProvider();
+
+      await provider.updateCalories(2200);
+      expect(provider.dailyCalories, 2200);
+
+      await provider.updateMealsPerDay(4);
+      expect(provider.mealsPerDay, 4);
+
+      provider.toggleFavoriteCuisine('อาหารญี่ปุ่น');
+      expect(provider.favoriteCuisines, contains('อาหารญี่ปุ่น'));
+      provider.toggleFavoriteCuisine('อาหารญี่ปุ่น');
+      expect(provider.favoriteCuisines, isNot(contains('อาหารญี่ปุ่น')));
+    });
+
     test('should add and remove disliked ingredients correctly', () {
       final provider = SettingsProvider();
 

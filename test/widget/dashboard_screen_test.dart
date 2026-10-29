@@ -26,9 +26,7 @@ void main() {
             ChangeNotifierProvider.value(value: mealProv),
             ChangeNotifierProvider.value(value: settingsProv),
           ],
-          child: const MaterialApp(
-            home: DashboardScreen(),
-          ),
+          child: const MaterialApp(home: DashboardScreen()),
         ),
       );
 
@@ -54,6 +52,12 @@ void main() {
       expect(find.text('แผนมื้ออาหาร'), findsOneWidget);
       expect(find.text('AI เมนูแนะนำ'), findsOneWidget);
       expect(find.text('โภชนาการวันนี้'), findsOneWidget);
+
+      // Week day selector navigation using ‹ and ›
+      await tester.tap(find.text('‹'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('›'));
+      await tester.pumpAndSettle();
     });
   });
 }
