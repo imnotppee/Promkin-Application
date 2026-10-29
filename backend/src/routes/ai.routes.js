@@ -166,7 +166,7 @@ Return realistic Thai meal prices and nutrition estimates. Put a concise Thai ex
         }),
         // Prevent the app from remaining in its loading state indefinitely if
         // the upstream AI service or the PC's internet connection is stalled.
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(45000),
       });
 
       if (response.ok) {
