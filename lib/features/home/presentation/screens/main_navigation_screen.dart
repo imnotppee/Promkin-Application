@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
 import 'package:promkin_app/core/constants/app_strings.dart';
 import 'package:promkin_app/features/auth/presentation/auth_provider.dart';
+import 'package:promkin_app/features/ai_recommendation/presentation/ai_provider.dart';
 import 'package:promkin_app/features/home/presentation/screens/dashboard_screen.dart';
 import 'package:promkin_app/features/meal_planner/presentation/screens/weekly_planner_screen.dart';
 import 'package:promkin_app/features/ai_recommendation/presentation/screens/ai_recommendation_screen.dart';
@@ -17,27 +18,68 @@ class MainNavigationScreen extends StatefulWidget {
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends State<MainNavigationScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  int _previousIndex = 0;
   final Set<int> _visitedTabs = {0};
+  late final AnimationController _tabTransitionController;
+  late final Animation<double> _tabFade;
+  late final Animation<Offset> _tabSlide;
 
   @override
   void initState() {
     super.initState();
+    _tabTransitionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 230),
+    )..value = 1;
+    final transition = CurvedAnimation(
+      parent: _tabTransitionController,
+      curve: Curves.easeOutCubic,
+    );
+    _tabFade = transition;
+    _tabSlide = Tween<Offset>(
+      begin: const Offset(.025, 0),
+      end: Offset.zero,
+    ).animate(transition);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final userId = context.read<AuthProvider>().currentUser?.id;
-      if (userId != null) {
-        context.read<SettingsProvider>().loadForUser(userId);
-      }
+      _loadStartupData();
     });
   }
 
+  Future<void> _loadStartupData() async {
+    if (!mounted) return;
+    final userId = context.read<AuthProvider>().currentUser?.id;
+    final settings = context.read<SettingsProvider>();
+    if (userId != null) await settings.loadForUser(userId);
+    if (!mounted) return;
+
+    await context.read<AiProvider>().fetchDashboardPick(
+      budget: settings.dailyBudget,
+      targetCalories: settings.dailyCalories,
+      mealCount: settings.mealsPerDay,
+      dislikedIngredients: settings.dislikedIngredients,
+      cuisines: settings.favoriteCuisines,
+    );
+  }
+
   void _onSelectTab(int index) {
+    if (index == _currentIndex) return;
     setState(() {
+      if (_currentIndex != 4 && index != _currentIndex) {
+        _previousIndex = _currentIndex;
+      }
       _currentIndex = index;
       _visitedTabs.add(index);
     });
+    _tabTransitionController.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _tabTransitionController.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,7 +89,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       WeeklyPlannerScreen(onNavigateToTab: _onSelectTab),
       const AiRecommendationScreen(),
       const RecipeSearchScreen(),
-      const SettingsScreen(),
+      SettingsScreen(
+        onBack: () => _onSelectTab(_previousIndex == 4 ? 0 : _previousIndex),
+      ),
     ];
     final tabChildren = List<Widget>.generate(
       screens.length,
@@ -62,7 +106,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           child: SizedBox(
             width: constraints.maxWidth.clamp(0.0, 620.0).toDouble(),
             height: constraints.maxHeight,
-            child: IndexedStack(index: _currentIndex, children: tabChildren),
+            child: FadeTransition(
+              opacity: _tabFade,
+              child: SlideTransition(
+                position: _tabSlide,
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: tabChildren,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -71,9 +124,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: SizedBox(
           width: MediaQuery.sizeOf(context).width.clamp(0.0, 620.0).toDouble(),
           child: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.paper,
-              border: Border(top: BorderSide(color: AppColors.line)),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              border: Border(
+                top: BorderSide(color: Theme.of(context).dividerColor),
+              ),
             ),
             child: SafeArea(
               child: Padding(
@@ -130,24 +185,37 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         onTap: () => _onSelectTab(index),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? selectedIcon : icon,
-                size: 22,
-                color: isSelected ? AppColors.primary : AppColors.muted,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primaryContainer.withAlpha(180)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isSelected ? selectedIcon : icon,
+                  size: 22,
                   color: isSelected ? AppColors.primary : AppColors.muted,
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.w500,
+                    color: isSelected ? AppColors.primary : AppColors.muted,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -43,7 +43,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     final calories = selectedMeals.fold<int>(0, (sum, m) => sum + m.calories);
 
     return Scaffold(
-      backgroundColor: AppColors.paper,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FadeSlideIn(
           child: CustomScrollView(
@@ -123,7 +123,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                             width: 138,
                             child: Material(
                               color: isSelected
-                                  ? const Color(0xFFB3C2AE)
+                                  ? AppColors.secondary
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(20),
                               child: InkWell(

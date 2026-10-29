@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_model.dart';
 import 'package:promkin_app/features/meal_planner/data/meal_repository.dart';
 import 'package:promkin_app/core/utils/date_formatter.dart';
+import 'package:promkin_app/core/database/preferences_helper.dart';
+import 'package:promkin_app/core/services/notification_service.dart';
 
 class MealProvider extends ChangeNotifier {
   final MealRepository _repository;
@@ -38,6 +40,10 @@ class MealProvider extends ChangeNotifier {
     final meals = await _repository.getAllMeals();
     if (generation != _loadGeneration || userId != _activeUserId) return;
     _allMeals = meals;
+    await NotificationService.instance.syncMealReminders(
+      meals,
+      enabled: PreferencesHelper.isReminderEnabled(),
+    );
     notifyListeners();
   }
 

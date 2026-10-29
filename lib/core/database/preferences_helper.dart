@@ -51,8 +51,20 @@ class PreferencesHelper {
   }
 
   // Dark Mode
+  static String getThemeMode() {
+    final saved = _prefs?.getString(AppConstants.keyThemeMode);
+    if (saved != null) return saved;
+    final legacyDarkMode = _prefs?.getBool(AppConstants.keyDarkMode);
+    if (legacyDarkMode == null) return 'system';
+    return legacyDarkMode ? 'dark' : 'light';
+  }
+
+  static Future<bool> setThemeMode(String value) async {
+    return await _prefs?.setString(AppConstants.keyThemeMode, value) ?? false;
+  }
+
   static bool isDarkMode() {
-    return _prefs?.getBool(AppConstants.keyDarkMode) ?? false;
+    return getThemeMode() == 'dark';
   }
 
   static Future<bool> setDarkMode(bool value) async {

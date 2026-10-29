@@ -7,9 +7,9 @@ class AppColors {
   static const Color primaryContainer = Color(0xFFE9F0E7);
   static const Color onPrimaryContainer = Color(0xFF324C3E);
 
-  static const Color secondary = Color(0xFFA8BDA5);
+  static const Color secondary = Color(0xFF93AA92);
   static const Color onSecondary = Color(0xFF163B2A);
-  static const Color secondaryContainer = Color(0xFFE3ECE1);
+  static const Color secondaryContainer = Color(0xFFD9E5D7);
   static const Color onSecondaryContainer = Color(0xFF384B3C);
 
   static const Color tertiary = Color(0xFFC58958);
@@ -20,7 +20,7 @@ class AppColors {
   static const Color paper = Color(0xFFFAF8F5);
   static const Color ink = Color(0xFF252B23);
   static const Color muted = Color(0xFF898D81);
-  static const Color line = Color(0xFFECE7DF);
+  static const Color line = Color(0xFFE2DDD4);
   static const Color yellow = Color(0xFFF2D291);
 
   static const Color backgroundLight = paper;

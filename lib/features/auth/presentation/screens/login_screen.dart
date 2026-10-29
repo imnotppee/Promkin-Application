@@ -47,37 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
                       child: SizedBox(
                         height: 48,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              tooltip: 'ย้อนกลับ',
-                              onPressed: () => Navigator.maybePop(context),
-                              icon: const Icon(Icons.arrow_back_rounded),
+                        child: Center(
+                          child: Text(
+                            _register ? 'Create Account' : 'Sign In',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
                             ),
-                            Expanded(
-                              child: Text(
-                                _register ? 'Create Account' : 'Sign In',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: const BoxDecoration(
-                                color: AppColors.secondary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.person_outline_rounded,
-                                color: AppColors.primary,
-                                size: 21,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -301,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     _register ? 'สร้างบัญชี' : 'เข้าสู่ระบบ',
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFB2C1AD),
+                                    backgroundColor: AppColors.secondary,
                                     foregroundColor: AppColors.primary,
                                     minimumSize: const Size.fromHeight(52),
                                   ),
@@ -421,7 +399,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: _register == register
-              ? const Color(0xFFB2C1AD)
+              ? AppColors.secondary
               : Colors.transparent,
           borderRadius: BorderRadius.circular(22),
         ),

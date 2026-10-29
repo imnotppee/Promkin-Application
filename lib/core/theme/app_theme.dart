@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:promkin_app/core/constants/app_colors.dart';
@@ -59,14 +60,24 @@ class AppTheme {
         ),
         iconTheme: const IconThemeData(color: AppColors.ink),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        },
+      ),
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: 2,
         margin: EdgeInsets.zero,
         color: AppColors.surfaceLight,
         surfaceTintColor: Colors.transparent,
+        shadowColor: AppColors.primary.withAlpha(22),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.line),
+          side: const BorderSide(color: Color(0xFFE5E0D8)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -149,23 +160,87 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    final text = GoogleFonts.dmSansTextTheme(ThemeData.dark().textTheme);
+    const background = AppColors.backgroundDark;
+    const surface = AppColors.surfaceDark;
+    const foreground = Color(0xFFF1F3EE);
+    const muted = Color(0xFFB0B7AD);
+    final text = GoogleFonts.dmSansTextTheme(
+      ThemeData.dark().textTheme,
+    ).apply(bodyColor: foreground, displayColor: foreground);
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.backgroundDark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.secondary,
-        brightness: Brightness.dark,
-        surface: AppColors.surfaceDark,
-      ),
+      scaffoldBackgroundColor: background,
+      colorScheme:
+          ColorScheme.fromSeed(
+            seedColor: AppColors.secondary,
+            brightness: Brightness.dark,
+            surface: surface,
+          ).copyWith(
+            primary: AppColors.secondary,
+            onPrimary: AppColors.primary,
+            secondary: AppColors.tertiary,
+            onSurface: foreground,
+            surfaceContainerHighest: const Color(0xFF303A32),
+            outline: const Color(0xFF536055),
+          ),
       textTheme: text,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: background,
+        foregroundColor: foreground,
+        surfaceTintColor: Colors.transparent,
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        },
+      ),
       cardTheme: CardThemeData(
-        elevation: 0,
-        color: AppColors.surfaceDark,
+        elevation: 2,
+        color: surface,
+        shadowColor: Colors.black.withAlpha(85),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: Colors.white.withAlpha(20)),
+          side: BorderSide(color: Colors.white.withAlpha(28)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF303A32),
+        hintStyle: const TextStyle(color: muted),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFF536055)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.secondary, width: 1.4),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: surface,
+        selectedColor: const Color(0xFF405643),
+        side: const BorderSide(color: Color(0xFF536055)),
+        labelStyle: const TextStyle(color: foreground),
+      ),
+      dividerTheme: const DividerThemeData(color: Color(0xFF3B463E)),
+      navigationBarTheme: const NavigationBarThemeData(
+        backgroundColor: surface,
+        indicatorColor: Color(0xFF405643),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.secondary,
+          foregroundColor: AppColors.primary,
+          elevation: 0,
         ),
       ),
     );

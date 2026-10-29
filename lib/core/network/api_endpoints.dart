@@ -8,12 +8,13 @@ class ApiEndpoints {
   );
 
   // Local Express Backend server
-  // On Android Emulator, localhost is reached via 10.0.2.2
-  // On iOS Simulator or Web/Desktop, localhost is 127.0.0.1 / localhost
+  // Physical Android devices reach the development backend over the same Wi-Fi.
+  // Use BACKEND_BASE_URL=http://10.0.2.2:5000/api for Android Emulator builds.
+  // On iOS Simulator or Web/Desktop, localhost is 127.0.0.1 / localhost.
   static String get localBackendBase {
     if (_backendOverride.trim().isNotEmpty) return _backendOverride.trim();
     if (kIsWeb) return 'http://localhost:5000/api';
-    if (Platform.isAndroid) return 'http://10.0.2.2:5000/api';
+    if (Platform.isAndroid) return 'http://10.111.2.65:5000/api';
     return 'http://localhost:5000/api';
   }
 
