@@ -35,6 +35,9 @@ void main() {
                       emoji: '🍲',
                       price: 50.0,
                       calories: 360,
+                      protein: 24,
+                      carbs: 52,
+                      fat: 10,
                       mealProvider: mealProvider,
                     );
                   },
@@ -52,6 +55,9 @@ void main() {
 
       // Verify Dialog UI
       expect(find.text('เพิ่มเมนูลงในแผน'), findsOneWidget);
+      expect(find.text('โปรตีน 24g'), findsOneWidget);
+      expect(find.text('คาร์บ 52g'), findsOneWidget);
+      expect(find.text('ไขมัน 10g'), findsOneWidget);
       expect(find.text('สุกี้น้ำไก่ · ฿50'), findsOneWidget);
       expect(find.text('🍲'), findsWidgets);
 

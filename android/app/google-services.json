@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "595891155553",
+    "project_id": "promkin",
+    "storage_bucket": "promkin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595891155553:android:3769a932dca103c463b020",
+        "android_client_info": {
+          "package_name": "com.promkin.promkin_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "595891155553-7hsg44ujf375chd364n0sghi3o8jind5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.promkin.promkin_app",
+            "certificate_hash": "e285802d68e2f0c5014da2dfd0f95ad2e1b153ca"
+          }
+        },
+        {
+          "client_id": "595891155553-c44ga3jqsqhl4bhks46ck1l0o0dovn1e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJmU0TcTufmOv-kua2kRUbi7ttIXlol_g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "595891155553-c44ga3jqsqhl4bhks46ck1l0o0dovn1e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "595891155553-1km98jgv05hcmhhi3at0a9qd5suqvot1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.promkin.promkinApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -256,22 +256,62 @@ class _RecipeSearchScreenState extends State<RecipeSearchScreen> {
   }
 
   Future<void> _addRecipeToPlan(RecipeModel recipe) async {
-    // Open the scheduling form immediately. Fetching full recipe details here
-    // made the plus button appear unresponsive while the backend (and optional
-    // nutrition estimate) was loading. Users can still open the recipe card to
-    // view its full details before adding it.
+    var details = recipe;
+    final needsNutrition =
+        recipe.calories <= 0 ||
+        recipe.protein <= 0 ||
+        recipe.carbs <= 0 ||
+        recipe.fat <= 0;
+
+    if (needsNutrition && !recipe.id.startsWith('demo_')) {
+      unawaited(
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const AlertDialog(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                ),
+                SizedBox(width: 16),
+                Expanded(child: Text('กำลังคำนวณข้อมูลโภชนาการ...')),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      try {
+        details = await _recipeService.getDetails(recipe.id);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('คำนวณข้อมูลโภชนาการไม่สำเร็จ กรุณาลองอีกครั้ง'),
+            ),
+          );
+        }
+      } finally {
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    if (!mounted) return;
     await AddToPlanDialog.show(
       context,
-      recipeName: recipe.name,
-      emoji: recipe.emoji,
-      imageUrl: recipe.imageUrl,
+      recipeName: details.name,
+      emoji: details.emoji,
+      imageUrl: details.imageUrl,
       source: 'themealdb',
-      sourceId: recipe.id,
-      price: recipe.estimatedPrice,
-      calories: recipe.calories > 0 ? recipe.calories : null,
-      protein: recipe.protein > 0 ? recipe.protein : null,
-      carbs: recipe.carbs > 0 ? recipe.carbs : null,
-      fat: recipe.fat > 0 ? recipe.fat : null,
+      sourceId: details.id,
+      price: details.estimatedPrice,
+      calories: details.calories > 0 ? details.calories : null,
+      protein: details.protein > 0 ? details.protein : null,
+      carbs: details.carbs > 0 ? details.carbs : null,
+      fat: details.fat > 0 ? details.fat : null,
       mealProvider: context.read<MealProvider>(),
     );
   }
